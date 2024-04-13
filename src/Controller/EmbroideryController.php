@@ -1,0 +1,153 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Embroidery;
+use App\Repository\EmbroideryRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+
+class EmbroideryController extends AbstractController
+{
+    #[Route('api/embroideries', name: 'app_api_embroideries', methods:['GET'])]
+    public function index(EmbroideryRepository $embroideryRepository): JsonResponse
+    {
+        $data = $embroideryRepository->findAll();
+        
+        return $this->json($data,200,[], ["groups"=>['embroidery','productLinked']] );
+
+    }
+
+    #[Route('api/embroideries/{id}', name: 'app_api_embroideries_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function show(Embroidery $embroidery): JsonResponse
+    {
+        if (!$embroidery) {
+            return $this->json([
+                "fail" =>["this embroidery doesn't exist"]],Response::HTTP_NOT_FOUND);  
+            }
+
+        // we catch the embroidery frome the database
+        return $this->json($embroidery, Response::HTTP_OK,[], ["groups"=>['embroidery','productLinked']]);
+    }
+
+
+    #[Route('api/embroideries/create', name: 'app_api_embroideries_create', methods: ['POST'])]
+    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager, ValidatorInterface $validator): JsonResponse
+    {
+
+        // we catch the JSON in the request
+        $data = $request->getContent();
+
+        // we manage the case where the JSON is in the wrong format
+        try {
+            // we transform the brut JSON in embroidery entity
+           
+            $embroidery = $serializer->deserialize($data, Embroidery::class, 'json');
+        } catch (NotEncodableValueException $exception) {
+            return $this->json([
+                "error" =>
+                ["message" => $exception->getMessage()]
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // we check if there is error
+        $errors = $validator->validate($embroidery);
+        if (count($errors) > 0) {
+
+            $dataErrors = [];
+            
+            foreach ($errors as $error) {
+                
+            $dataErrors[$error->getPropertyPath()] = $error->getMessage();
+            }
+
+            return $this->json(["error" => ["message" => $dataErrors]], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $entityManager->persist($embroidery);
+
+        $entityManager->flush();
+        
+        return $this->json($embroidery, Response::HTTP_CREATED, ["Location" => $this->generateUrl("app_api_embroideries")], ["groups"=>['embroidery','productLinked']]);
+    }
+
+    #[Route('api/embroideries/delete/{id}', name: 'app_api_embroideries_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function delete(Embroidery $embroidery, EntityManagerInterface $em): JsonResponse
+    {   
+        // we catch the embroidery by the id and we use the remove from EntityManagerInterface
+        $em->remove($embroidery);
+        // we send the request to the database
+        $em->flush();
+        
+        return $this->json([
+            "success" =>["item deleted"]],Response::HTTP_NO_CONTENT, ["Location" => $this->generateUrl("app_api_embroideries")]);
+            
+    }
+    #[Route('api/embroideries/edit/{id}', name: 'app_api_embroideries_edit', methods: ['GET'])]
+    public function edit(Embroidery $embroidery): JsonResponse
+    {
+        if (!$embroidery) {
+            return $this->json([
+                "fail" => ["this embroidery doesn't exist"]
+            ], Response::HTTP_NOT_FOUND);
+        }
+        return $this->json(
+            $embroidery, 
+            Response::HTTP_OK, 
+            [], 
+            ["groups" => ['embroidery', 'productLinked']]
+        );
+    }
+
+
+    #[Route('api/embroideries/update/{id}', name:"app_api_embroideries_update", methods:['POST'])]
+    public function update(Request $request, SerializerInterface $serializer, Embroidery $currentEmbroidery, EntityManagerInterface $em,ValidatorInterface $validator): JsonResponse 
+    {   
+        if (!$currentEmbroidery) {
+            return $this->json([
+                "fail" =>["this embroidery doesn't exist"]],Response::HTTP_NOT_FOUND);  
+            }
+
+
+        try {
+        //we catch the JSON in the request
+            $updatedEmbroidery = $serializer->deserialize($request->getContent(),
+                Embroidery::class, 
+                'json', 
+            
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $currentEmbroidery]);
+        }catch (NotEncodableValueException $exception) {
+            
+            return $this->json([
+                "error" =>
+                ["message" => $exception->getMessage()]
+            ], Response::HTTP_BAD_REQUEST);
+        }
+        // we check if there is error
+        $errors = $validator->validate($updatedEmbroidery);
+        if (count($errors) > 0) {
+
+            $dataErrors = [];
+            
+            foreach ($errors as $error) {
+                
+            $dataErrors[$error->getPropertyPath()] = $error->getMessage();
+            }
+
+        }
+
+        $em->persist($updatedEmbroidery);
+        $em->flush();
+        return $this->json($updatedEmbroidery, Response::HTTP_CREATED,["Location" => $this->generateUrl("app_api_embroideries")],["groups"=>['embroidery','productLinked']]);
+   }
+
+}
+

@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\EmbroideryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+
+#[Groups(['embroidery'])]
+#[ORM\Entity(repositoryClass: EmbroideryRepository::class)]
+class Embroidery
+{
+    #[Groups(['contract','embroideryLinked','embroideryLinkedId'])]
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[Groups(['contract','embroideryLinked'])]
+    #[Assert\Length(max: 100)]  
+    // #[Assert\Length(max: 1,
+    // message :'pa bon')]  
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $name = null;
+
+    #[Groups(['contract','embroideryLinked'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
+    #[ORM\Column(length: 100)]
+    private ?string $design = null;
+
+    #[Groups(['contract','embroideryLinked'])]
+    #[Assert\Length(max: 100)]
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $text = null;
+
+    #[Groups(['contract','embroideryLinked'])]
+    #[Assert\Length(max: 100)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $detail = null;
+
+    #[Groups(['contract','embroideryLinked'])]
+    #[Assert\NotBlank(message :'pa bon')]
+    #[Assert\type(Types::DATE_IMMUTABLE, message :'pa bon')]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private ?\DateTimeImmutable $created_at = null;
+
+    #[Groups(['contract','embroideryLinked'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updated_at = null;
+
+    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'embroidery')]
+    private Collection $products;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getDesign(): ?string
+    {
+        return $this->design;
+    }
+
+    public function setDesign(string $design): static
+    {
+        $this->design = $design;
+
+        return $this;
+    }
+
+    public function getText(): ?string
+    {
+        return $this->text;
+    }
+
+    public function setText(?string $text): static
+    {
+        $this->text = $text;
+
+        return $this;
+    }
+
+    public function getDetail(): ?string
+    {
+        return $this->detail;
+    }
+
+    public function setDetail(?string $detail): static
+    {
+        $this->detail = $detail;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    {
+        $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    {
+        $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): static
+    {
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+            $product->setEmbroidery($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): static
+    {
+        if ($this->products->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getEmbroidery() === $this) {
+                $product->setEmbroidery(null);
+            }
+        }
+
+        return $this;
+    }
+}
