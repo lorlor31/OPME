@@ -17,6 +17,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+date_default_timezone_set('Europe/Paris');
+
+
 class UserController extends AbstractController
 {
     #[Route('api/users', name: 'app_api_users', methods:['GET'])]
@@ -78,16 +81,32 @@ class UserController extends AbstractController
     );
     }
 
-    #[Route('/api/users/delete/{id}', name: 'app_api_users_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(User $user, EntityManagerInterface $em): JsonResponse
-    {   
-        // we catch the embroidery by the id and we use the remove from EntityManagerInterface
-        $em->remove($user);
-        // we send the request to the database
-        $em->flush();
-        return $this->json([
-            "success" =>["item deleted"]],Response::HTTP_NO_CONTENT, ["Location" => $this->generateUrl("app_api_users")]);
-            
+    #[Route('/api/users/delete/{id}', name: 'app_api_users_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(UserRepository $userrepos,$id,EntityManagerInterface $em): JsonResponse
+    {
+            $user=$userrepos->find($id);
+            if (empty($user)){
+                return $this->json([
+                    "error"=>"There aren't any user with this id !"
+                ]
+                , Response::HTTP_BAD_REQUEST);
+            }
+
+            try {
+                $em->remove($user);
+                $em->flush();
+                return $this->json([
+                    "success" =>"Item deleted with success !"
+                ],
+                Response::HTTP_OK);
+            }
+            catch(\Exception $e){
+                return $this->json([
+                    "error"=>"We encounter some errors with your deletion",
+                    "reason"=>$e->getMessage()
+                ]
+                , Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
     }
 
     #[Route('api/users/edit/{id}', name: 'app_api_users_edit', methods: ['GET'])]
@@ -106,7 +125,7 @@ class UserController extends AbstractController
         );
     }
 
-    #[Route('/api/users/update/{id}', name:"app_api_users_update", methods:['POST'])]
+    #[Route('/api/users/update/{id}', name:"app_api_users_update", methods:['PUT'])]
 
     public function update(Request $request, SerializerInterface $serializer, User $currentUser, EntityManagerInterface $em,ValidatorInterface $validator): JsonResponse 
     {   

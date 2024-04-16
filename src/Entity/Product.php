@@ -11,6 +11,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[Groups(['product'])]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+
 class Product
 {
     #[Groups(['contract','productLinked','productLinkedId'])]
@@ -19,67 +21,68 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]  
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[Assert\NotBlank]
     // TODO check with the product owner the min max quantities
     #[ORM\Column]
     private ?int $quantity = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2)]
     private ?float $price = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $delivery_at = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[Assert\NotBlank]
     #[Assert\Positive]
     // TODO check with the product owner the min max delays
     #[ORM\Column]
     private ?int $manufacturing_delay = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[Assert\NotBlank]
     // TODO check with the product owner the min max product_order
     #[ORM\Column()]
     private ?int $product_order = null;
 
-    #[Groups(['contract','productLinked'])]
+    #[Groups(['productLinked'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    #[Groups(['contract','productLinked'])]
-    #[Assert\NotBlank]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['productLinked'])]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[Assert\type(Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[Groups(['contract','productLinked'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+    #[Groups(['productLinked'])]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
+    private ?\DateTimeImmutable $updated_at = null;
 
-    #[Groups(['productContract'])]
+    #[Groups(['contractLinkedId'])]
     // #[ORM\ManyToOne(inversedBy: 'products',cascade: [])]
     #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: true)]
     private ?Contract $contract = null;
 
     // #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'])]
-    #[Groups(['contract','productTextileLinkedId'])]
+    #[Groups(['textileLinkedId','contractTextile','productTextileLinkedId'])]
     #[ORM\ManyToOne(inversedBy: 'products',cascade: ['persist'],fetch : 'EAGER')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Textile $textile = null;
 
     // #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'])]
-    #[Groups(['contract','productEmbroideryLinkedId'])]
+    #[Groups(['productLinkedId','contractEmbroidery','productEmbroideryLinkedId'])]
     #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'], fetch : 'EAGER')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Embroidery $embroidery = null;
@@ -178,9 +181,10 @@ class Product
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->created_at = $created_at;
+        $this->created_at = new \DateTimeImmutable();
 
         return $this;
     }
@@ -190,9 +194,10 @@ class Product
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updated_at = $updated_at;
+        $this->updated_at = new \DateTimeImmutable();
 
         return $this;
     }

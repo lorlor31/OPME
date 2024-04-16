@@ -13,6 +13,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[Groups(['embroidery'])]
 #[ORM\Entity(repositoryClass: EmbroideryRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+
 class Embroidery
 {
     #[Groups(['contract','embroideryLinked','embroideryLinkedId'])]
@@ -44,15 +46,16 @@ class Embroidery
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $detail = null;
 
+
     #[Groups(['contract','embroideryLinked'])]
-    #[Assert\NotBlank(message :'pa bon')]
-    #[Assert\type(Types::DATE_IMMUTABLE, message :'pa bon')]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[Assert\type(Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $created_at = null;
 
     #[Groups(['contract','embroideryLinked'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'embroidery')]
     private Collection $products;
@@ -120,9 +123,10 @@ class Embroidery
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->created_at = $created_at;
+        $this->created_at = new \DateTimeImmutable();
 
         return $this;
     }
@@ -132,9 +136,10 @@ class Embroidery
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updated_at = $updated_at;
+        $this->updated_at = new \DateTimeImmutable();
 
         return $this;
     }

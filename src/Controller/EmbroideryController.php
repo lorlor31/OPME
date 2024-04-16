@@ -15,6 +15,9 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
+date_default_timezone_set('Europe/Paris');
+
+
 class EmbroideryController extends AbstractController
 {
     #[Route('api/embroideries', name: 'app_api_embroideries', methods:['GET'])]
@@ -79,18 +82,34 @@ class EmbroideryController extends AbstractController
         return $this->json($embroidery, Response::HTTP_CREATED, ["Location" => $this->generateUrl("app_api_embroideries")], ["groups"=>['embroidery','productLinked']]);
     }
 
-    #[Route('api/embroideries/delete/{id}', name: 'app_api_embroideries_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(Embroidery $embroidery, EntityManagerInterface $em): JsonResponse
-    {   
-        // we catch the embroidery by the id and we use the remove from EntityManagerInterface
-        $em->remove($embroidery);
-        // we send the request to the database
-        $em->flush();
-        
-        return $this->json([
-            "success" =>["item deleted"]],Response::HTTP_NO_CONTENT, ["Location" => $this->generateUrl("app_api_embroideries")]);
-            
+    #[Route('/api/embroideries/delete/{id}', name: 'app_api_embroideries_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(EmbroideryRepository $embroideryrepos,$id,EntityManagerInterface $em): JsonResponse
+    {
+            $embroidery=$embroideryrepos->find($id);
+            if (empty($embroidery)){
+                return $this->json([
+                    "error"=>"There aren't any embroidery  with this id !"
+                ]
+                , Response::HTTP_BAD_REQUEST);
+            }
+
+            try {
+                $em->remove($embroidery);
+                $em->flush();
+                return $this->json([
+                    "success" =>"Item deleted with success !"
+                ],
+                Response::HTTP_OK);
+            }
+            catch(\Exception $e){
+                return $this->json([
+                    "error"=>"We encounter some errors with your deletion",
+                    "reason"=>$e->getMessage()
+                ]
+                , Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
     }
+
     #[Route('api/embroideries/edit/{id}', name: 'app_api_embroideries_edit', methods: ['GET'])]
     public function edit(Embroidery $embroidery): JsonResponse
     {
@@ -108,7 +127,7 @@ class EmbroideryController extends AbstractController
     }
 
 
-    #[Route('api/embroideries/update/{id}', name:"app_api_embroideries_update", methods:['POST'])]
+    #[Route('api/embroideries/update/{id}', name:"app_api_embroideries_update", methods:['PUT'])]
     public function update(Request $request, SerializerInterface $serializer, Embroidery $currentEmbroidery, EntityManagerInterface $em,ValidatorInterface $validator): JsonResponse 
     {   
         if (!$currentEmbroidery) {

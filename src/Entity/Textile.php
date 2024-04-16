@@ -2,18 +2,24 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TextileRepository;
-use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[Groups(['textile'])]
 #[ORM\Entity(repositoryClass: TextileRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+
+    
 class Textile
 {
+    // public const $date = time();
+
     #[Groups(['contract','textileLinked','textileLinkedId'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -51,16 +57,18 @@ class Textile
     private ?string $comment = null;
 
     #[Groups(['contract','textileLinked'])]
-    #[Assert\NotBlank]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     #[Assert\type(Types::DATE_IMMUTABLE)]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE )]
-    private ?\DateTimeImmutable $created_at = null;
+/*   #[ORM\Column(type: Types::DATETIME_IMMUTABLE )]
+ */  private ?\DateTimeImmutable $created_at = null;
 
     //TODO
     
     #[Groups(['contract','textileLinked'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+/*     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+ */ #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE)]
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'textile')]
     private Collection $products;
@@ -147,26 +155,30 @@ class Textile
         return $this;
     }
 
+   
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->created_at = $created_at;
+        $this->created_at = new \DateTimeImmutable();
 
         return $this;
     }
+
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updated_at = $updated_at;
+        $this->updated_at = new \DateTimeImmutable();
 
         return $this;
     }

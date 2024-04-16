@@ -35,7 +35,57 @@ class CustomerRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
+    public function findByType($value): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.type = :val')
+            ->setParameter('val', $value)
+            ->orderBy('c.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    public function findCustomerByName($customerName): array
+          {
+              return $this->createQueryBuilder('customer')
+                ->andWhere('customer.name LIKE :customerName')
+                  ->setParameter('customerName', '%' . $customerName . '%')
+                  ->orderBy('customer.id', 'ASC')
+                  ->setMaxResults(10)
+                  ->getQuery()
+                  ->getResult();
+          }
 
+    public function findCustomerEmail($customerEmail): array
+          {
+              return $this->createQueryBuilder('customer')
+                ->andWhere('customer.email LIKE :customerEmail')
+                  ->setParameter('customerEmail', '%' . $customerEmail . '%')
+                  ->orderBy('customer.id', 'ASC')
+                  ->setMaxResults(10)
+                  ->getQuery()
+                  ->getResult();
+          }
+
+    public function countCustomersByEmail(string $email): int
+          {
+              return $this->createQueryBuilder('customer')
+                  ->select('COUNT(customer.id)')
+                  ->andWhere('customer.email = :email')
+                  ->setParameter('email', $email)
+                  ->getQuery()
+                  ->getSingleScalarResult();
+          }
+
+    public function findByPhoneNumber(string $phone_number): array
+          {
+              return $this->createQueryBuilder('customer')
+                  ->andWhere('customer.phone_number LIKE :phone_number')
+                  ->setParameter('phone_number', $phone_number.'%' )
+                  ->getQuery()
+                  ->getResult();
+          }
     //    public function findOneBySomeField($value): ?Customer
     //    {
     //        return $this->createQueryBuilder('c')

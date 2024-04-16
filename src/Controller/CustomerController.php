@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
+use App\Repository\ContractRepository;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,9 +12,12 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+
+date_default_timezone_set('Europe/Paris');
+
 
 class CustomerController extends AbstractController
 {
@@ -31,13 +35,32 @@ class CustomerController extends AbstractController
     }
 
 
-    #[Route('api/customers/delete/{id}', name: 'app_api_customers_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(customer $customer, EntityManagerInterface $em): JsonResponse
+    #[Route('/api/customers/delete/{id}', name: 'app_api_customers_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(CustomerRepository $customerrepos,$id,EntityManagerInterface $em): JsonResponse
     {
-        $em->remove($customer);
-        $em->flush();
-        return $this->json([
-            "success" =>["item deleted"]],Response::HTTP_NO_CONTENT);
+            $customer=$customerrepos->find($id);
+            if (empty($customer)){
+                return $this->json([
+                    "error"=>"There aren't any customer with this id !"
+                ]
+                , Response::HTTP_BAD_REQUEST);
+            }
+
+            try {
+                $em->remove($customer);
+                $em->flush();
+                return $this->json([
+                    "success" =>"Item deleted with success !"
+                ],
+                Response::HTTP_OK);
+            }
+            catch(\Exception $e){
+                return $this->json([
+                    "error"=>"We encounter some errors with your deletion",
+                    "reason"=>$e->getMessage()
+                ]
+                , Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
     }
 
     #[Route('api/customers/create', name: 'app_api_customers_create', methods:['POST'])]
@@ -88,7 +111,7 @@ public function edit(Customer $customer): JsonResponse
     );
 }
 
-#[Route('api/customers/update/{id}', name:"app_api_customers_update", methods:['POST'])]
+#[Route('api/customers/update/{id}', name:"app_api_customers_update", methods:['PUT'])]
 
     public function update(Request $request, SerializerInterface $serializer, Customer $currentCustomer, ValidatorInterface $validator, EntityManagerInterface $em): JsonResponse 
 
@@ -139,4 +162,47 @@ public function edit(Customer $customer): JsonResponse
         );
         
    }
+
+   #[Route('api/customers/customer/{name}', name: 'app_api_customers_customer', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
+    public function findCustomerByName(CustomerRepository $customerRepository,$name): JsonResponse
+    {
+        $data = $customerRepository->findCustomerByName($name);
+
+        return $this->json(
+            $data, 
+            200, 
+            [], 
+            ["groups" => ['customer']]
+        );
+    }
+    #[Route('api/customers/email/{email}', name: 'app_api_customers_email', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
+    public function findCustomerEmail(CustomerRepository $customerRepository,$email): JsonResponse
+    {
+        $data = $customerRepository->findCustomerEmail($email);
+        $itemCount = count($data);
+        $data[]= $itemCount ;
+
+        return $this->json(
+            $data,
+            200, 
+            [], 
+            ["groups" => ['customer']],
+        );
+    }
+#[Route('api/customers/customer/phone_number/{phone_number}', name: 'app_api_customers_phone_number', methods: ['GET'], requirements: ['phone_number' => '[0-9]+'])]
+    public function findByPhoneNumber(CustomerRepository $customerRepository,$phone_number): JsonResponse
+    {
+        $data = $customerRepository->findByPhoneNumber($phone_number);
+        if (empty($data)) {
+        return $this->json(['Poti soucis!' => 'Aucun client trouvé pour ce numéro de téléphone'], JsonResponse::HTTP_NOT_FOUND);}
+        $itemCount = count($data);
+        $data[]= $itemCount ;
+
+        return $this->json(
+            $data, 
+            200, 
+            [], 
+            ["groups" => ['customer']]
+        );
+    }
 }

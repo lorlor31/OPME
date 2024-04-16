@@ -12,39 +12,41 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[Groups(['customer'])]
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+
 class Customer
 {
-    #[Groups(['contract','customerLinked','customerLinkedId'])]
+    #[Groups(['customerLinked','customerLinkedId'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['contract','customerLinked'])]
+    #[Groups(['customerLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]  
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
-    #[Groups(['contract','customerLinked'])]
+    #[Groups(['customerLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 500)]  
     #[ORM\Column(length: 500)]
     private ?string $address = null;
 
-    #[Groups(['contract','customerLinked'])]
+    #[Groups(['customerLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]  
     #[ORM\Column(length: 100)]
     private ?string $email = null;
 
-    #[Groups(['contract','customerLinked'])]
+    #[Groups(['customerLinked'])]
     #[Assert\Length(max: 100)]  
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $contact = null;
 
     // TODO check constraints related to international phone numbers
-    #[Groups(['contract','customerLinked'])]
+    #[Groups(['customerLinked'])]
     #[Assert\Regex(
         pattern: '/^\d{10}$/',
         message: 'You should provide a phone number with 10 digits ! ',
@@ -52,15 +54,15 @@ class Customer
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $phone_number = null;
 
-    #[Groups(['contract','customerLinked'])]
-    #[Assert\NotBlank]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['customerLinked'])]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[Assert\type(Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[Groups(['contract','customerLinked'])]
-    // #[ORM\Column(type:"datetime",nullable: true)]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+    #[Groups(['customerLinked'])]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\OneToMany(targetEntity: Contract::class, mappedBy: 'customer')]
     private Collection $contracts;
@@ -140,9 +142,10 @@ class Customer
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->created_at = $created_at;
+        $this->created_at = new \DateTimeImmutable();
 
         return $this;
     }
@@ -152,9 +155,10 @@ class Customer
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updated_at = $updated_at;
+        $this->updated_at = new \DateTimeImmutable();
 
         return $this;
     }

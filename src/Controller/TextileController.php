@@ -15,28 +15,50 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
+date_default_timezone_set('Europe/Paris');
+
+
 class TextileController extends AbstractController
 {
     #[Route('api/textiles', name: 'app_api_textiles', methods:['GET'])]
     public function index(TextileRepository $textileRepository): JsonResponse
     {
         $data = $textileRepository->findAll();
-        return $this->json($data,200,[], ["groups"=>['textile','productLinked']] );
+        return $this->json($data,200,[], ["groups"=>['textileLinked'] ]);
     }
 
     #[Route('/api/textiles/{id}', name: 'app_api_textiles_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(textile $textile): JsonResponse
     {
-        return $this->json($textile, Response::HTTP_OK, [], ["groups"=>['textile','productLinked']] );
+        return $this->json($textile, Response::HTTP_OK, [], ["groups"=>['textileLinked']] );
     }
-
-    #[Route('/api/textiles/delete/{id}', name: 'app_api_textiles_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(textile $textile, EntityManagerInterface $em): JsonResponse
+    
+    #[Route('/api/textiles/delete/{id}', name: 'app_api_textiles_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(TextileRepository $textilerepos,$id,EntityManagerInterface $em): JsonResponse
     {
-        $em->remove($textile);
-        $em->flush();
-        return $this->json([
-            "success" =>["item deleted"]],Response::HTTP_NO_CONTENT);
+            $textile=$textilerepos->find($id);
+            if (empty($textile)){
+                return $this->json([
+                    "error"=>"There aren't any textile with this id !"
+                ]
+                , Response::HTTP_BAD_REQUEST);
+            }
+
+            try {
+                $em->remove($textile);
+                $em->flush();
+                return $this->json([
+                    "success" =>"Item deleted with success !"
+                ],
+                Response::HTTP_OK);
+            }
+            catch(\Exception $e){
+                return $this->json([
+                    "error"=>"We encounter some errors with your deletion",
+                    "reason"=>$e->getMessage()
+                ]
+                , Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
     }
 
     #[Route('api/textiles/create', name: 'app_api_textiles_create', methods:['POST'])]
@@ -70,7 +92,7 @@ class TextileController extends AbstractController
         $textile, 
         Response::HTTP_CREATED, 
         ["Location" => $this->generateUrl("app_api_textiles")],
-        ["groups"=>['textile']] 
+        ["groups"=>['textileLinked']] 
         ); 
     }
 
@@ -90,7 +112,7 @@ class TextileController extends AbstractController
         );
     }
 
-    #[Route('api/textiles/update/{id}', name:"app_api_textiles_update", methods:['POST'])]
+    #[Route('api/textiles/update/{id}', name:"app_api_textiles_update", methods:['PUT'])]
     public function update(Request $request, SerializerInterface $serializer, Textile $currentTextile, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse 
     {   
         if (!$currentTextile) {

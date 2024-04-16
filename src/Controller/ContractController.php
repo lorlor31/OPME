@@ -15,23 +15,53 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
+date_default_timezone_set('Europe/Paris');
 
 class ContractController extends AbstractController
 {
     #[Route('api/contracts', name: 'app_api_contracts', methods: ['GET'])]
     public function index(ContractRepository $contractRepository): JsonResponse
     {
-        $data = $contractRepository->findAll();
-
+        $contracts = $contractRepository->findAll();
+        // Convert the objects' array into a JSON Response
         return $this->json(
-            $data, 
+            $contracts, 
             200, 
             [], 
-            ["groups" => ['contract']]
+            ["groups" => ['contract','userLinked','productLinked','contractTextile','contractEmbroidery','customerLinked',]]
         );
+        /* //Get the content of the response 
+        $jsonToSimplified =$response->getContent();
+        // Convert the string Json to Json object
+        $jsonObj = json_decode($jsonToSimplified, true);
+        $contracts=[];
+        //loop through all the contracts :
+        foreach ($jsonObj as $contract) {
+            // convert the json formatted ids to simple integers for user, customer and products json
+            $customerId= $contract['customer']['id'];
+            $userId= $contract['user']['id'];
+            $contract['customer']=$customerId;
+            $contract['user']=$userId;
+            $products=[];
+            // dd($contract);
+            foreach ($contract['products']as $product) {
+                $productId=intval($product['id']) ;
+                unset($product['id']);
+                $products[]=$productId;
+            }
+            $contract['products']=$products;
+            $contracts[]=$contract;
+        }
+    // dd($contracts);
+        return $this->json(
+            $contracts, 
+            Response::HTTP_OK,     
+        ); */
     }
+
 
     #[Route('api/contracts/{id}', name: 'app_api_contracts_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Contract $contract): JsonResponse
@@ -42,12 +72,35 @@ class ContractController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json(
+         $response = $this->json(
             $contract, 
             Response::HTTP_OK, 
             [], 
-            ["groups" => ['contract']]
-        );          
+            ["groups" => ['contract','customerLinked']]
+        );   
+        
+        //Get the content of the response 
+        $jsonToSimplified =$response->getContent();
+        // Convert the string Json to Json object
+        $jsonObj = json_decode($jsonToSimplified, true);
+        // convert the json formatted ids to simple integers for user, customer and products json
+        $customerId= $jsonObj['customer']['id'];
+        $userId= $jsonObj['user']['id'];
+        $jsonObj['customer']=$customerId;
+        $jsonObj['user']=$userId;
+        // dd($jsonObj['products']);
+        $products=[];
+        // dd($jsonObj);
+        foreach ($jsonObj['products']as $product) {
+            $productId=intval($product['id']) ;
+            unset($product['id']);
+            $products[]=$productId;
+        }
+        $jsonObj['products']=$products;
+        return $this->json(
+            $jsonObj, 
+            Response::HTTP_OK,     
+        );
     }
 
     #[Route('api/contracts/create', name: 'app_api_contracts_create', methods: ['POST'])]
@@ -90,17 +143,32 @@ class ContractController extends AbstractController
         );
     }
 
-    #[Route('api/contracts/delete/{id}', name: 'app_api_contracts_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(Contract $contract, EntityManagerInterface $em): JsonResponse
+    #[Route('/api/contracts/delete/{id}', name: 'app_api_contracts_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(ContractRepository $contractrepos,$id,EntityManagerInterface $em): JsonResponse
     {
-        // we catch the contract by the id and we use the remove from EntityManagerInterface
-        $em->remove($contract);
-        // we send the request to the database
-        $em->flush();
+            $contract=$contractrepos->find($id);
+            if (empty($contract)){
+                return $this->json([
+                    "error"=>"There aren't any contract with this id !"
+                ]
+                , Response::HTTP_BAD_REQUEST);
+            }
 
-        return $this->json([
-            "success" => ["item deleted"]
-        ], Response::HTTP_NO_CONTENT, ["Location" => $this->generateUrl("app_api_contracts")]);
+            try {
+                $em->remove($contract);
+                $em->flush();
+                return $this->json([
+                    "success" =>"Item deleted with success !"
+                ],
+                Response::HTTP_OK);
+            }
+            catch(\Exception $e){
+                return $this->json([
+                    "error"=>"We encounter some errors with your deletion",
+                    "reason"=>$e->getMessage()
+                ]
+                , Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
     }
 
     #[Route('api/contracts/edit/{id}', name: 'app_api_contracts_edit', methods: ['GET'])]
@@ -115,33 +183,14 @@ class ContractController extends AbstractController
             $contract, 
             Response::HTTP_OK, 
             [], 
-            ["groups" => ['contract']]
+            ["groups" => ['contract','customerLinked','productLinked','userLinked']]
         );
     }
 
-    #[Route('api/contracts/update/{id}', name: "app_api_contracts_update", methods: ['POST'])]
+    #[Route('api/contracts/update/{id}', name: "app_api_contracts_update", methods: ['PUT'])]
 
     public function update(Request $request, SerializerInterface $serializer, Contract $currentContract, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
-
-        // {
-        //     "id": 1,
-        //     "type": "invoice",
-        //     "ordered_at": null,
-        //     "invoiced_at": null,
-        //     "delivery_address": "67 av de la mairie",
-        //     "status": "obsolete",
-        //     "comment": "Je veux un chiot dessiné sur la casquette",
-        //     "created_at": "2024-03-28T04:25:48+00:00",
-        //     "updated_at": null,
-        //     "user": 5
-        //     ,
-        //     "customer": 21,
-        //     "products": [
-        //         1
-        //     ]
-        // }
-
         //check if there is a contract with $id as id
         if (!$currentContract) {
             return $this->json([
@@ -217,12 +266,41 @@ class ContractController extends AbstractController
     {
         $data = $contractRepository->findByType($type);
 
+        // Convert the objects' array into a JSON Response
         return $this->json(
             $data, 
             200, 
             [], 
-            ["groups" => ['contract']]
+            ["groups" => ['contract','userLinked','productLinked','contractTextile','contractEmbroidery','customerLinked',]]
         );
+/* 
+        //Get the content of the response 
+        $jsonToSimplified =$response->getContent();
+        // Convert the string Json to Json object
+        $jsonObj = json_decode($jsonToSimplified, true);
+        $contracts=[];
+        //loop through all the contracts :
+        foreach ($jsonObj as $contract) {
+            // convert the json formatted ids to simple integers for user, customer and products json
+            $customerId= $contract['customer']['id'];
+            $userId= $contract['user']['id'];
+            $contract['customer']=$customerId;
+            $contract['user']=$userId;
+            $products=[];
+            // dd($contract);
+            foreach ($contract['products']as $product) {
+                $productId=intval($product['id']) ;
+                unset($product['id']);
+                $products[]=$productId;
+            }
+            $contract['products']=$products;
+            $contracts[]=$contract;
+        }
+    // dd($contracts);
+        return $this->json(
+            $contracts, 
+            Response::HTTP_OK,     
+        ); */
     }
 
     #[Route('api/contracts/customer/{name}', name: 'app_api_contracts_customer', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]

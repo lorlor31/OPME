@@ -15,6 +15,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[Groups(['user'])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PSEUDO', fields: ['pseudo'])]
+#[ORM\HasLifecycleCallbacks]
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
@@ -49,15 +51,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Groups(['userLinked'])]
-    #[Assert\NotBlank]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     #[Assert\type(Types::DATE_IMMUTABLE)]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $created_at = null;
 
     #[Groups(['userLinked'])]
-    #[Assert\DateTime]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\OneToMany(targetEntity: Contract::class, mappedBy: 'user')]
     private Collection $contracts;
@@ -138,9 +139,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->created_at = $created_at;
+        $this->created_at = new \DateTimeImmutable();
 
         return $this;
     }
@@ -150,9 +152,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updated_at = $updated_at;
+        $this->updated_at = new \DateTimeImmutable();
 
         return $this;
     }

@@ -21,7 +21,7 @@ use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
-
+date_default_timezone_set('Europe/Paris');
 
 class ProductController extends AbstractController
 {
@@ -29,23 +29,62 @@ class ProductController extends AbstractController
     public function index(ProductRepository $productRepository): JsonResponse
     {
         $data = $productRepository->findAll();
-        return $this->json(
+        $productsJson = $this->json(
             $data,
             200,
             [], 
-            ["groups"=>['product','contractLinked','textileLinked','embroideryLinked']] 
+            ["groups"=>['product','contractLinkedId','textileLinkedId','embroideryLinkedId']] 
+        );
+        $productsJsonToSimplified =$productsJson->getContent();
+        // Convert the string Json to Json object
+        $jsonObj = json_decode($productsJsonToSimplified, true);
+        $products=[];
+        foreach($jsonObj as $product ) {
+            // convert the json formatted ids to simple integers for user, customer and products json
+            $textileId= $product['textile']['id'];
+            $embroideryId= $product['embroidery']['id'];
+            $contractId= $product['contract']['id'];
+            $product['textile']=$textileId;
+            $product['embroidery']=$embroideryId;
+            $product['contract']=$contractId;
+            $products[]=$product ;
+        }
+        return $this->json(
+            $products, 
+            Response::HTTP_OK,     
         );
     }
 
     #[Route('api/products/{id}', name: 'app_api_products_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(Product $product): JsonResponse
+    public function show(ProductRepository $productRepos, $id): JsonResponse
     {
+        $product = $productRepos->find($id);
         if (!$product) {
             return $this->json([
                 "fail" =>["this product doesn't exist"]],Response::HTTP_NOT_FOUND);  
             }
-        // return the product in JSON format
-        return $this->json($product, Response::HTTP_OK,[], ["groups"=>['product','contractLinked','textileLinked','embroideryLinked']]);
+            $data = $this->json(
+                $product, 
+                Response::HTTP_OK, 
+                [], 
+                ["groups"=>['product','contractLinkedId','textileLinkedId','embroideryLinkedId']]             );
+            
+            $jsonToSimplified =$data->getContent();
+            // Convert the string Json to Json object
+            $jsonObj = json_decode($jsonToSimplified, true);
+            // convert the json formatted ids to simple integers for user, customer and products json
+            $textileId= $jsonObj['textile']['id'];
+            $embroideryId= $jsonObj['embroidery']['id'];
+            $contractId= $jsonObj['contract']['id'];
+            $jsonObj['textile']=$textileId;
+            $jsonObj['embroidery']=$embroideryId;
+            $jsonObj['contract']=$contractId;
+            // $jsonString=json_encode($jsonObj) ;
+            // dd($jsonObj);
+            return $this->json(
+                $jsonObj, 
+                Response::HTTP_OK,     
+            );
     }
 
 
@@ -97,24 +136,38 @@ class ProductController extends AbstractController
             $product, 
             Response::HTTP_CREATED,
             ["Location" => $this->generateUrl("app_api_products")],
-            ["groups"=>['product','textileLinked','embroideryLinked']]);
+            ["groups"=>['product','textileLinked','embroideryLinked','contractLinkedId']]);
     }
 
-    #[Route('api/products/delete/{id}', name: 'app_api_products_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(Product $product, EntityManagerInterface $em): JsonResponse
-    {   
-        // remove the product typehinted thanks to EntityManagerInterface
-        $em->remove($product);
-        // send the request to the database
-        $em->flush();
-        
-        return $this->json([
-            "success" =>["item deleted"]],Response::HTTP_NO_CONTENT, ["Location" => $this->generateUrl("app_api_products")]);
-            
-    }
+    #[Route('/api/products/delete/{id}', name: 'app_api_products_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(ProductRepository $productrepos,$id,EntityManagerInterface $em): JsonResponse
+    {
+            $product=$productrepos->find($id);
+            if (empty($product)){
+                return $this->json([
+                    "error"=>"There aren't any product with this id !"
+                ]
+                , Response::HTTP_BAD_REQUEST);
+            }
 
+            try {
+                $em->remove($product);
+                $em->flush();
+                return $this->json([
+                    "success" =>"Item deleted with success !"
+                ],
+                Response::HTTP_OK);
+            }
+            catch(\Exception $e){
+                return $this->json([
+                    "error"=>"We encounter some errors with your deletion",
+                    "reason"=>$e->getMessage()
+                ]
+                , Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+    }
     #[Route('api/products/edit/{id}', name: 'app_api_products_edit', methods: ['GET'])]
-    public function edit(Product $product, Request $request, SerializerInterface $serializer): JsonResponse
+    public function edit(Product $product): JsonResponse
     {
         if (!$product) {
             return $this->json([
@@ -128,7 +181,7 @@ class ProductController extends AbstractController
             $product, 
             Response::HTTP_OK, 
             [], 
-            ["groups"=>['product','contractLinkedId','textileLinkedId','embroideryLinkedId']] 
+            ["groups"=>['product','textileLinkedId','embroideryLinkedId','contractLinkedId']] 
         );
         
         $jsonToSimplified =$data->getContent();
@@ -149,7 +202,7 @@ class ProductController extends AbstractController
         );
     }
     
-    #[Route('api/products/update/{id}', name:"app_api_products_update", methods:['POST'])]
+    #[Route('api/products/update/{id}', name:"app_api_products_update", methods:['PUT'])]
 
     public function update(Request $request, SerializerInterface $serializer, Product $currentProduct, EntityManagerInterface $em ,ValidatorInterface $validator): JsonResponse 
     {   
@@ -235,7 +288,7 @@ class ProductController extends AbstractController
                 $data,
                 200,
                 [], 
-                ["groups"=>['product','contractLinked','textileLinked','embroideryLinked']] 
+                ["groups"=>['product','textileLinked','embroideryLinked']] 
             );
         
         

@@ -7,12 +7,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use PhpParser\Builder\Enum_;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[Groups(['contract'])]
 #[ORM\Entity(repositoryClass: ContractRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+
 class Contract
 {
     #[Groups(['contractLinked','contractLinkedId'])]
@@ -61,13 +62,14 @@ class Contract
     private ?string $comment = null;
 
     #[Groups(['contractLinked'])]
-    #[Assert\NotBlank]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[Assert\type(Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $created_at = null;
 
     #[Groups(['contractLinked'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\ManyToOne(inversedBy: 'contracts', cascade: ['persist'],fetch : 'EAGER')]
     private ?User $user = null;
@@ -170,9 +172,10 @@ class Contract
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->created_at = $created_at;
+        $this->created_at = new \DateTimeImmutable();
 
         return $this;
     }
@@ -182,9 +185,10 @@ class Contract
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updated_at = $updated_at;
+        $this->updated_at = new \DateTimeImmutable();
 
         return $this;
     }
