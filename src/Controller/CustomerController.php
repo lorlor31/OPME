@@ -197,10 +197,12 @@ public function edit(Customer $customer): JsonResponse
             ["groups" => ['customerLinked']]
         );
     }
-    #[Route('api/customers/email/{email}', name: 'app_api_customers_email', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
+    #[Route('api/customers/customer/email/{email}', name: 'app_api_customers_email', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
     public function findCustomerEmail(CustomerRepository $customerRepository,$email): JsonResponse
     {
         $data = $customerRepository->findCustomerEmail($email);
+        if (empty($data)) {
+        return $this->json(['Poti soucis!' => 'Aucun client trouvé pour cet email'], JsonResponse::HTTP_NOT_FOUND);}
         $itemCount = count($data);
         $data[]= $itemCount ;
 
@@ -211,6 +213,7 @@ public function edit(Customer $customer): JsonResponse
             ["groups" => ['customerLinked']],
         );
     }
+
 #[Route('api/customers/customer/phone_number/{phone_number}', name: 'app_api_customers_phone_number', methods: ['GET'], requirements: ['phone_number' => '[0-9]+'])]
     public function findByPhoneNumber(CustomerRepository $customerRepository,$phone_number): JsonResponse
     {

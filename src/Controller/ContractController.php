@@ -306,6 +306,7 @@ class ContractController extends AbstractController
         ); */
     }
 
+
     #[Route('api/contracts/customer/{name}', name: 'app_api_contracts_customer', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
     public function findByCustomer(ContractRepository $contractRepository,$name): JsonResponse
     {
@@ -319,23 +320,38 @@ class ContractController extends AbstractController
         );
     }
 
-    #[Route('api/contracts/{id}/pdf', name: 'app_api_contracts_pdf', methods: ['GET'])]
+    //route to render a pdf into the navigator
+    #[Route('api/contracts/{id}/viewpdf', name: 'app_api_contracts_pdf', methods: ['GET'])]
     public function pdfShow(Contract $contract) 
     {
-        return $this->render('contract/pdf.html.twig', [
+        return $this->render('contract/pdf.html.cssInline.twig', [
             'contract' => $contract
         ]);
     }
     
-    #[Route('api/contracts/{id}/render', name: 'app_api_contracts_pdf', methods: ['GET'])]
-    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf ) {
+
+    //route to generate a pdf file for the contract
+    // the user should specify the absolute path expected for the pdf file in the query string like ?path=home/student
+
+    #[Route('api/contracts/{id}/renderpdf', name: 'app_api_contracts_render', methods: ['GET'])]
+    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf,Request $request ) 
+    {
+        $locationParameter = $request->query->get('path');
+        // $statParameter = $request->query->get('stat');
+
+        // $knpSnappyPdf->generate('http://localhost:8000/api/contracts/29/pdf', '/home/student/contract.pdf');
+        $date = date('d-m-Y-H-i-s') ;
+        // $path= 
         $knpSnappyPdf->generateFromHtml(
         $this->renderView(
-        'contract/pdf.html.twig',
-        array('contract'  => $contract)
-        ),
-        '/home/student/contract.pdf'
-    );
+        'contract/pdf.html.cssInline.twig',
+        array('contract'  => $contract)),
+        // "/home/student/contract{$date}.pdf"
+        "/{$locationParameter}/contract{$date}.pdf"
+        );
+        return  $this->render('contract/pdf.html.cssInline.twig', [
+            'contract' => $contract
+        ]);
     }
 
 }
