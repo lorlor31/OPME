@@ -35,17 +35,17 @@ class Contract
 
     #[Groups(['contractLinked'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $ordered_at = null;
+    private ?\DateTimeInterface $orderedAt = null;
 
     #[Groups(['contractLinked'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $invoiced_at = null;
+    private ?\DateTimeInterface $invoicedAt = null;
 
     #[Groups(['contractLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 500)]  
     #[ORM\Column(length: 500)]
-    private ?string $delivery_address = null;
+    private ?string $deliveryAddress = null;
 
     #[Groups(['contractLinked'])]
     #[Assert\NotBlank]
@@ -64,12 +64,12 @@ class Contract
     #[Groups(['contractLinked'])]
     #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     #[Assert\type(Types::DATE_IMMUTABLE)]
-    private ?\DateTimeImmutable $created_at = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[Groups(['contractLinked'])]
     #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
     #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
-    private ?\DateTimeImmutable $updated_at = null;
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'contracts', cascade: ['persist'],fetch : 'EAGER')]
     private ?User $user = null;
@@ -109,36 +109,36 @@ class Contract
 
     public function getOrderedAt(): ?\DateTimeInterface
     {
-        return $this->ordered_at;
+        return $this->orderedAt;
     }
 
-    public function setOrderedAt(?\DateTimeInterface $ordered_at): static
+    public function setOrderedAt(?\DateTimeInterface $orderedAt): static
     {
-        $this->ordered_at = $ordered_at;
+        $this->orderedAt = $orderedAt;
 
         return $this;
     }
 
     public function getInvoicedAt(): ?\DateTimeInterface
     {
-        return $this->invoiced_at;
+        return $this->invoicedAt;
     }
 
-    public function setInvoicedAt(?\DateTimeInterface $invoiced_at): static
+    public function setInvoicedAt(?\DateTimeInterface $invoicedAt): static
     {
-        $this->invoiced_at = $invoiced_at;
+        $this->invoicedAt = $invoicedAt;
 
         return $this;
     }
 
     public function getDeliveryAddress(): ?string
     {
-        return $this->delivery_address;
+        return $this->deliveryAddress;
     }
 
-    public function setDeliveryAddress(string $delivery_address): static
+    public function setDeliveryAddress(string $deliveryAddress): static
     {
-        $this->delivery_address = $delivery_address;
+        $this->deliveryAddress = $deliveryAddress;
 
         return $this;
     }
@@ -169,26 +169,26 @@ class Contract
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
     #[ORM\PrePersist]
     public function setCreatedAt(): static
     {
-        $this->created_at = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
 
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAt(): static
     {
-        $this->updated_at = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
 
         return $this;
     }

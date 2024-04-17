@@ -25,7 +25,7 @@ class EmbroideryController extends AbstractController
     {
         $data = $embroideryRepository->findAll();
         
-        return $this->json($data,200,[], ["groups"=>['embroidery','productLinked']] );
+        return $this->json($data,200,[], ["groups"=>['embroideryLinked']] );
 
     }
 
@@ -38,7 +38,7 @@ class EmbroideryController extends AbstractController
             }
 
         // we catch the embroidery frome the database
-        return $this->json($embroidery, Response::HTTP_OK,[], ["groups"=>['embroidery','productLinked']]);
+        return $this->json($embroidery, Response::HTTP_OK,[], ["groups"=>['embroideryLinked']]);
     }
 
 
@@ -79,7 +79,7 @@ class EmbroideryController extends AbstractController
 
         $entityManager->flush();
         
-        return $this->json($embroidery, Response::HTTP_CREATED, ["Location" => $this->generateUrl("app_api_embroideries")], ["groups"=>['embroidery','productLinked']]);
+        return $this->json($embroidery, Response::HTTP_CREATED, ["Location" => $this->generateUrl("app_api_embroideries")], ["groups"=>['embroideryLinked']]);
     }
 
     #[Route('/api/embroideries/delete/{id}', name: 'app_api_embroideries_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
@@ -122,7 +122,7 @@ class EmbroideryController extends AbstractController
             $embroidery, 
             Response::HTTP_OK, 
             [], 
-            ["groups" => ['embroidery', 'productLinked']]
+            ["groups" => ['embroideryLinked']]
         );
     }
 
@@ -153,11 +153,8 @@ class EmbroideryController extends AbstractController
         // we check if there is error
         $errors = $validator->validate($updatedEmbroidery);
         if (count($errors) > 0) {
-
-            $dataErrors = [];
-            
-            foreach ($errors as $error) {
-                
+            $dataErrors = [];            
+            foreach ($errors as $error) {    
             $dataErrors[$error->getPropertyPath()] = $error->getMessage();
             }
 
@@ -165,7 +162,7 @@ class EmbroideryController extends AbstractController
 
         $em->persist($updatedEmbroidery);
         $em->flush();
-        return $this->json($updatedEmbroidery, Response::HTTP_CREATED,["Location" => $this->generateUrl("app_api_embroideries")],["groups"=>['embroidery','productLinked']]);
+        return $this->json($updatedEmbroidery, Response::HTTP_CREATED,["Location" => $this->generateUrl("app_api_embroideries")],["groups"=>['embroideryLinked']]);
    }
 
 }

@@ -25,13 +25,30 @@ class CustomerController extends AbstractController
     public function index(CustomerRepository $customerRepository): JsonResponse
     {
         $data = $customerRepository->findAll();
-        return $this->json($data,200,[], ["groups"=>['customer','contractLinked']] );
+        return $this->json($data,200,[], ["groups"=>['customer']] );
     }
 
     #[Route('api/customers/{id}', name: 'app_api_customers_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(customer $customer): JsonResponse
     {
-        return $this->json($customer, Response::HTTP_OK,[], ["groups"=>['customer','contractLinked']] );
+        $response =  $this->json($customer, Response::HTTP_OK,[], ["groups"=>['customer']] );
+        //Get the content of the response 
+        $jsonToSimplified =$response->getContent();
+        // Convert the string Json to Json object
+        $jsonObj = json_decode($jsonToSimplified, true);
+        // convert the json formatted ids to simple integers 
+        $contracts=[];
+        // dd($jsonObj);
+        foreach ($jsonObj['contracts']as $contract) {
+            $contractId=intval($contract['id']) ;
+            unset($contract['id']);
+            $contracts[]=$contractId;
+        }
+        $jsonObj['contracts']=$contracts;
+        return $this->json(
+            $jsonObj, 
+            Response::HTTP_OK,     
+        );
     }
 
 
@@ -107,7 +124,7 @@ public function edit(Customer $customer): JsonResponse
         $customer, 
         Response::HTTP_OK, 
         [], 
-        ["groups"=>['customer','contractLinked']] 
+        ["groups"=>['customer']] 
     );
 }
 
@@ -120,15 +137,20 @@ public function edit(Customer $customer): JsonResponse
             if (!$currentCustomer) {
                 throw $this->createNotFoundException('Le client n\'existe pas.');
             }
-            // Convert the JSON in Doctrine Object
-            $updatedCustomer = $serializer->deserialize($request->getContent(), 
-                Customer::class, 
-                'json', 
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $currentCustomer]);
-            // We check if we received a JSON
+            // Convert the string Json to Json object
+            $jsonReceived = json_decode($request->getContent(), true); 
+            // convert the json formatted ids to simple integers for contracts
+            // Given contracts is an array, loop to retrieve all the contracts'ids
+            // $contractsId= [] ;
+            // foreach ($jsonReceived['contracts'] as $contract) {
+            //     $contractsId[]=$contract;
+            // }
+            // $jsonReceived['contracts']=$contractsId ;
+            // // Convert the json object to string back
+            $jsonToConvert=json_encode($jsonReceived) ;            
             try {
                 //we catch the JSON in the request
-                    $updatedCustomer = $serializer->deserialize($request->getContent(),
+                    $updatedCustomer = $serializer->deserialize($jsonToConvert,
                     Customer::class, 
                         'json', 
                         [AbstractNormalizer::OBJECT_TO_POPULATE => $currentCustomer]);
@@ -158,7 +180,7 @@ public function edit(Customer $customer): JsonResponse
             return $this->json($updatedCustomer, 
             Response::HTTP_CREATED,
             ["Location" => $this->generateUrl("app_api_customers")],
-            ["groups"=>['customer','contractLinked']] 
+            ["groups"=>['customer']] 
         );
         
    }

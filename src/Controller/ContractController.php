@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\Contract;
 use App\Repository\ContractRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Bundle\SnappyBundle\DependencyInjection\KnpSnappyExtension;
+use Knp\Bundle\SnappyBundle\KnpSnappyBundle;
+use Knp\Snappy\Pdf as knpPdf ;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -72,7 +75,7 @@ class ContractController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
 
-         $response = $this->json(
+        $response = $this->json(
             $contract, 
             Response::HTTP_OK, 
             [], 
@@ -315,4 +318,24 @@ class ContractController extends AbstractController
             ["groups" => ['contract']]
         );
     }
+
+    #[Route('api/contracts/{id}/pdf', name: 'app_api_contracts_pdf', methods: ['GET'])]
+    public function pdfShow(Contract $contract) 
+    {
+        return $this->render('contract/pdf.html.twig', [
+            'contract' => $contract
+        ]);
+    }
+    
+    #[Route('api/contracts/{id}/render', name: 'app_api_contracts_pdf', methods: ['GET'])]
+    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf ) {
+        $knpSnappyPdf->generateFromHtml(
+        $this->renderView(
+        'contract/pdf.html.twig',
+        array('contract'  => $contract)
+        ),
+        '/home/student/contract.pdf'
+    );
+    }
+
 }

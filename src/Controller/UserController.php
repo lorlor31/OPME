@@ -19,14 +19,13 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 date_default_timezone_set('Europe/Paris');
 
-
 class UserController extends AbstractController
 {
     #[Route('api/users', name: 'app_api_users', methods:['GET'])]
     public function index(UserRepository $userRepository): JsonResponse
     {
         $data = $userRepository->findAll();
-        return $this->json($data,200,[], ["groups"=>['user','contractLinked']] );
+        return $this->json($data,200,[], ["groups"=>['userLinked']] );
     }
 
     #[Route('/api/users/{id}', name: 'app_api_users_show', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -37,7 +36,7 @@ class UserController extends AbstractController
                 "fail" =>["this user doesn't exist"]],Response::HTTP_NOT_FOUND);  
             }
         // return a JSON with the User Object properties and its relations
-        return $this->json($user, Response::HTTP_OK,[], ["groups"=>['user','contractLinked']] );
+        return $this->json($user, Response::HTTP_OK,[], ["groups"=>['userLinked']] );
     }
 
     #[Route('/api/users/create', name: 'app_api_users_create', methods: ['POST'])]
@@ -77,7 +76,7 @@ class UserController extends AbstractController
         return $this->json($user,
         Response::HTTP_CREATED, 
         ["Location" => $this->generateUrl("app_api_users")],
-        ["groups"=>['user','contractLinked']] 
+        ["groups"=>['userLinked']] 
     );
     }
 
@@ -121,7 +120,7 @@ class UserController extends AbstractController
             $user, 
             Response::HTTP_OK, 
             [], 
-            ["groups"=>['user','contractLinked']]
+            ["groups"=>['userLinked']]
         );
     }
 
@@ -160,7 +159,7 @@ class UserController extends AbstractController
         return $this->json($updatedUser, 
         Response::HTTP_CREATED,
         ["Location" => $this->generateUrl("app_api_users")],
-        ["groups"=>['user','contractLinked']] 
+        ["groups"=>['userLinked']] 
         );
    }
 }

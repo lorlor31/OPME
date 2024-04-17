@@ -40,20 +40,19 @@ class Product
 
     #[Groups(['productLinked'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $delivery_at = null;
+    private ?\DateTimeInterface $deliveryAt = null;
 
     #[Groups(['productLinked'])]
     #[Assert\NotBlank]
     #[Assert\Positive]
     // TODO check with the product owner the min max delays
     #[ORM\Column]
-    private ?int $manufacturing_delay = null;
+    private ?int $manufacturingDelay = null;
 
     #[Groups(['productLinked'])]
     #[Assert\NotBlank]
-    // TODO check with the product owner the min max product_order
     #[ORM\Column()]
-    private ?int $product_order = null;
+    private ?int $productOrder = null;
 
     #[Groups(['productLinked'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -62,12 +61,12 @@ class Product
     #[Groups(['productLinked'])]
     #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     #[Assert\type(Types::DATE_IMMUTABLE)]
-    private ?\DateTimeImmutable $created_at = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[Groups(['productLinked'])]
     #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
     #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
-    private ?\DateTimeImmutable $updated_at = null;
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[Groups(['contractLinkedId'])]
     // #[ORM\ManyToOne(inversedBy: 'products',cascade: [])]
@@ -130,36 +129,36 @@ class Product
 
     public function getDeliveryAt(): ?\DateTimeInterface
     {
-        return $this->delivery_at;
+        return $this->deliveryAt;
     }
 
-    public function setDeliveryAt(?\DateTimeInterface $delivery_at): static
+    public function setDeliveryAt(?\DateTimeInterface $deliveryAt): static
     {
-        $this->delivery_at = $delivery_at;
+        $this->deliveryAt = $deliveryAt;
 
         return $this;
     }
 
     public function getManufacturingDelay(): ?int
     {
-        return $this->manufacturing_delay;
+        return $this->manufacturingDelay;
     }
 
-    public function setManufacturingDelay(int $manufacturing_delay): static
+    public function setManufacturingDelay(int $manufacturingDelay): static
     {
-        $this->manufacturing_delay = $manufacturing_delay;
+        $this->manufacturingDelay = $manufacturingDelay;
 
         return $this;
     }
 
     public function getProductOrder(): ?int
     {
-        return $this->product_order;
+        return $this->productOrder;
     }
 
-    public function setProductOrder(int $product_order): static
+    public function setProductOrder(int $productOrder): static
     {
-        $this->product_order = $product_order;
+        $this->productOrder = $productOrder;
 
         return $this;
     }
@@ -178,26 +177,26 @@ class Product
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
     #[ORM\PrePersist]
     public function setCreatedAt(): static
     {
-        $this->created_at = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
 
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAt(): static
     {
-        $this->updated_at = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
 
         return $this;
     }

@@ -60,7 +60,7 @@ class Textile
     #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     #[Assert\type(Types::DATE_IMMUTABLE)]
 /*   #[ORM\Column(type: Types::DATETIME_IMMUTABLE )]
- */  private ?\DateTimeImmutable $created_at = null;
+ */  private ?\DateTimeImmutable $createdAt = null;
 
     //TODO
     
@@ -68,7 +68,7 @@ class Textile
 /*     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
  */ #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
     #[Assert\type(Types::DATE_MUTABLE)]
-    private ?\DateTimeImmutable $updated_at = null;
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'textile')]
     private Collection $products;
@@ -158,13 +158,13 @@ class Textile
    
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
     #[ORM\PrePersist]
     public function setCreatedAt(): static
     {
-        $this->created_at = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
 
         return $this;
     }
@@ -172,13 +172,13 @@ class Textile
 
     public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAt(): static
     {
-        $this->updated_at = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
 
         return $this;
     }
