@@ -38,7 +38,7 @@ Exemple avec Contracts
 | `/api/contracts/type/{type}` | `GET` | `ContractController` || afficher que les contracts de type quotation/invoice ou order|type=quotation/invoice/ order|
 | `/api/contracts/customer/{name}` | `GET` | `ContractController` || afficher que les contracts du client {name}|name=string|
 | `api/contracts/{id}/viewpdf` | `GET` | `ContractController` || afficher la prévisualisation du pdf du contrat n°=id|id=integer|
-| `api/contracts/{id}/renderpdf?path={path_to_the_local_folder}` | `GET` | `ContractController` || enregistrer le pdf dans le dossier {path} |path=/home/user par exemple|
+| `api/contracts/{id}/renderpdf}` | `GET` | `ContractController` || télécharger le pdf |
 
 ### Exemple de JSON  
 
