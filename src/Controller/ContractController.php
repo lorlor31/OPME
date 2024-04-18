@@ -4,11 +4,15 @@ namespace App\Controller;
 
 use App\Entity\Contract;
 use Knp\Snappy\Pdf as knpPdf ;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Part\File;
 use App\Repository\ContractRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mime\Part\DataPart;
 use Knp\Bundle\SnappyBundle\KnpSnappyBundle;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -202,7 +206,9 @@ class ContractController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
         //check it there are at least one product in the contract
-        $products = json_decode($request->getContent(), true)['products']; 
+        /* if (json_decode($request->getContent(), true)['products']) {
+            $products = json_decode($request->getContent(), true)['products'];
+        }
         $type = json_decode($request->getContent(), true)['type']; 
         if (count($products)==0) {
             if ($type=='invoice' || $type=='order' ) {
@@ -210,7 +216,7 @@ class ContractController extends AbstractController
                     "Warning" => ["You can not pass the contract into an invoice or an order as long as you don't have products"]
                 ], Response::HTTP_NOT_FOUND);
             }
-        }
+        } */
         // dd($products);
         // Convert the string Json to Json object
         $jsonReceived = json_decode($request->getContent(), true); 
@@ -220,11 +226,11 @@ class ContractController extends AbstractController
         $jsonReceived['user']=$userId ;
         $jsonReceived['customer']=$customerId ;
         // Given products is an array, loop to retrieve all the products'ids
-        $productsId= [] ;
-        foreach ($jsonReceived['products'] as $product) {
+/*          $productsId= [] ;
+       foreach ($jsonReceived['products'] as $product) {
             $productsId[]=$product;
         }
-        $jsonReceived['products']=$productsId ;
+        $jsonReceived['products']=$productsId ; */
         // Convert the json object to string back
         $jsonToConvert=json_encode($jsonReceived) ;
     
@@ -352,14 +358,48 @@ class ContractController extends AbstractController
 
     //route to response with a pdf file for the contract
     #[Route('api/contracts/{id}/renderpdf', name: 'app_api_contracts_renderpdf', methods: ['GET'])]
-    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf) 
+    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf,MailerInterface $mailerinterf) 
     {
-        $date = date('d-m-Y-H-i-s') ;
+        //Retrieve infos to customize pdf file name
+        $date = date('d-m-Y-H-i') ;
         $contractId = $contract->getId();
         $customer = $contract->getCustomer()->getName();
+        // Render the twig view
         $html = $this->renderView(
         'contract/pdf.html.cssInline.twig',
         array('contract'  => $contract));
+        //Create a pdf file
+        // $pdf =  $this->render('contract/pdf.html.cssInline.twig', [
+        //             'contract' => $contract
+        //         ]);
+                $knpSnappyPdf->generateFromHtml(
+                    $this->renderView(
+                        'contract/pdf.html.cssInline.twig',
+                        array(
+                            'contract'  => $contract
+                        )
+                    ),
+                    "/home/student/contract{$contractId}-{$customer}-{$date}.pdf"
+                );
+        
+        //Create an email to send
+        $email = (new Email())
+                ->from('lorlor@free.fr')
+                ->to('lorlor@free.fr')
+
+/*                 ->to('fayis_78920@hotmail.fr')
+ */                ->subject("Voici le pdf du contrat {$contract->getId()} ")
+                // ->html('<h1>Un film a été crée</h1> <p>info du film TODO</p>');
+                ->html('<h1>bonne réception</h1>')
+                // ->addPart(new DataPart(new File('/home/student/con.pdf')));
+                ->addPart(new DataPart(new File("/home/student/contract{$contractId}-{$customer}-{$date}.pdf")));
+
+                // ->addPart(new DataPart(fopen($pdf,'r')));
+
+
+        $mailerinterf->send($email);
+
+        //convert the html to pdf response
         return new PdfResponse(
             $knpSnappyPdf->getOutputFromHtml($html),
             "contract{$contractId}-{$customer}-{$date}.pdf"
