@@ -25,30 +25,30 @@ class CustomerController extends AbstractController
     public function index(CustomerRepository $customerRepository): JsonResponse
     {
         $data = $customerRepository->findAll();
-        return $this->json($data,200,[], ["groups"=>['customer']] );
+        return $this->json($data,200,[], ["groups"=>['customerLinked']] );
     }
 
     #[Route('api/customers/{id}', name: 'app_api_customers_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(customer $customer): JsonResponse
     {
-        $response =  $this->json($customer, Response::HTTP_OK,[], ["groups"=>['customer']] );
-        //Get the content of the response 
-        $jsonToSimplified =$response->getContent();
-        // Convert the string Json to Json object
-        $jsonObj = json_decode($jsonToSimplified, true);
-        // convert the json formatted ids to simple integers 
-        $contracts=[];
-        // dd($jsonObj);
-        foreach ($jsonObj['contracts']as $contract) {
-            $contractId=intval($contract['id']) ;
-            unset($contract['id']);
-            $contracts[]=$contractId;
-        }
-        $jsonObj['contracts']=$contracts;
+        // $response =  $this->json($customer, Response::HTTP_OK,[], ["groups"=>['customerLinked']] );
+        // //Get the content of the response 
+        // $jsonToSimplified =$response->getContent();
+        // // Convert the string Json to Json object
+        // $jsonObj = json_decode($jsonToSimplified, true);
+        // // convert the json formatted ids to simple integers 
+        // $contracts=[];
+        // // dd($jsonObj);
+        // foreach ($jsonObj['contracts']as $contract) {
+        //     $contractId=intval($contract['id']) ;
+        //     unset($contract['id']);
+        //     $contracts[]=$contractId;
+        // }
+        // $jsonObj['contracts']=$contracts;
         return $this->json(
-            $jsonObj, 
-            Response::HTTP_OK,     
-        );
+            $customer, 
+            Response::HTTP_OK,[],     
+            ["groups"=>['customerLinked']] );
     }
 
 
@@ -125,7 +125,7 @@ public function edit(Customer $customer): JsonResponse
         $customer, 
         Response::HTTP_OK, 
         [], 
-        ["groups"=>['customer']] 
+        ["groups"=>['customerLinked']] 
     );
 }
 
@@ -181,7 +181,7 @@ public function edit(Customer $customer): JsonResponse
             return $this->json($updatedCustomer, 
             Response::HTTP_CREATED,
             ["Location" => $this->generateUrl("app_api_customers")],
-            ["groups"=>['customer']] 
+            ["groups"=>['customerLinked']] 
         );
         
    }
@@ -195,7 +195,7 @@ public function edit(Customer $customer): JsonResponse
             $data, 
             200, 
             [], 
-            ["groups" => ['customer']]
+            ["groups" => ['customerLinked']]
         );
     }
     #[Route('api/customers/customer/email/{email}', name: 'app_api_customers_email', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
@@ -211,7 +211,7 @@ public function edit(Customer $customer): JsonResponse
             $data,
             200, 
             [], 
-            ["groups" => ['customer']],
+            ["groups" => ['customerLinked']],
         );
     }
 
@@ -228,7 +228,7 @@ public function edit(Customer $customer): JsonResponse
             $data, 
             200, 
             [], 
-            ["groups" => ['customer']]
+            ["groups" => ['customerLinked']]
         );
     }
 }
