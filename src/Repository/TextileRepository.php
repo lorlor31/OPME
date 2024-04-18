@@ -21,6 +21,18 @@ class TextileRepository extends ServiceEntityRepository
         parent::__construct($registry, Textile::class);
     }
 
+    public function findByType($value): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', $value)
+            ->orderBy('t.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     //    /**
     //     * @return Textile[] Returns an array of Textile objects
     //     */

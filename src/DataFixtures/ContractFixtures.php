@@ -28,7 +28,7 @@ class ContractFixtures extends Fixture implements DependentFixtureInterface
         $faker->addProvider(new AppProvider());
 
 //Contract fixtures
-    for ($currentContract = 0; $currentContract < 30; $currentContract++)
+    for ($currentContract = 0; $currentContract < 50; $currentContract++)
     {
         //creating  a fictitious contract
         $contract = new Contract();
@@ -37,18 +37,14 @@ class ContractFixtures extends Fixture implements DependentFixtureInterface
          //get all the users list
         $userList=$this->userRepos->findAll() ;
         // setting fields with data
+        $contract->setorderedAt($faker->dateTimeInInterval('- 4 weeks' , '+ 2 weeks' ));
+        $contract->setinvoicedAt($faker->dateTimeInInterval('- 2 weeks ' , '+ 2 weeks'));
         $contract->setType($faker->randomElement($faker->getContractType()));
-
         $contract->setDeliveryAddress($faker->randomElement($faker->getContractDeliveryAddress()));
-
         $contract->setStatus($faker->randomElement($faker->getContractStatus()));
-
         $contract->setComment($faker->randomElement($faker->getContractComment()));
-
         $contract->setCreatedAt((DateTimeImmutable::createFromMutable($faker->dateTimeBetween("-30 days"))));
-        
         $contract->setUser($faker->randomElement($userList));
-        
         $contract->setCustomer($faker->randomElement($customerList));
         // persist in database
         $manager->persist($contract);

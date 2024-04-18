@@ -3,23 +3,22 @@
 namespace App\Controller;
 
 use App\Entity\Contract;
-use Knp\Snappy\Pdf as knpPdf ;
 use App\Repository\ContractRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Bundle\SnappyBundle\DependencyInjection\KnpSnappyExtension;
 use Knp\Bundle\SnappyBundle\KnpSnappyBundle;
+use Knp\Snappy\Pdf as knpPdf ;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Knp\Bundle\SnappyBundle\DependencyInjection\KnpSnappyExtension;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 date_default_timezone_set('Europe/Paris');
@@ -307,7 +306,6 @@ class ContractController extends AbstractController
         ); */
     }
 
-
     #[Route('api/contracts/customer/{name}', name: 'app_api_contracts_customer', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
     public function findByCustomer(ContractRepository $contractRepository,$name): JsonResponse
     {
@@ -321,49 +319,23 @@ class ContractController extends AbstractController
         );
     }
 
-    //route to render a pdf into the navigator
-    #[Route('api/contracts/{id}/viewpdf', name: 'app_api_contracts_viewpdf', methods: ['GET'])]
+    #[Route('api/contracts/{id}/pdf', name: 'app_api_contracts_pdf', methods: ['GET'])]
     public function pdfShow(Contract $contract) 
     {
-        return $this->render('contract/pdf.html.cssInline.twig', [
+        return $this->render('contract/pdf.html.twig', [
             'contract' => $contract
         ]);
     }
     
-    //route to generate a pdf file for the contract
-    // the user should specify the absolute path expected for the pdf file in the query string like ?path=home/student
-    // #[Route('api/contracts/{id}/renderpdfToHd', name: 'app_api_contracts_renderpdfToHD', methods: ['GET'])]
-    // public function pdfRenderHD(Contract $contract, knpPdf $knpSnappyPdf,Request $request ) 
-    // {
-    //     $locationParameter = $request->query->get('path');
-    //     $date = date('d-m-Y-H-i-s') ;
-    //     // $path= 
-    //     $knpSnappyPdf->generateFromHtml(
-    //     $this->renderView(
-    //     'contract/pdf.html.cssInline.twig',
-    //     array('contract'  => $contract)),
-    //     // "/home/student/contract{$date}.pdf"
-    //     "/{$locationParameter}/contract{$date}.pdf"
-    //     );
-    //     return  $this->render('contract/pdf.html.cssInline.twig', [
-    //         'contract' => $contract
-    //     ]);
-    // }
-
-    //route to response with a pdf file for the contract
-    #[Route('api/contracts/{id}/renderpdf', name: 'app_api_contracts_renderpdf', methods: ['GET'])]
-    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf) 
-    {
-        $date = date('d-m-Y-H-i-s') ;
-        $contractId = $contract->getId();
-        $customer = $contract->getCustomer()->getName();
-        $html = $this->renderView(
-        'contract/pdf.html.cssInline.twig',
-        array('contract'  => $contract));
-        return new PdfResponse(
-            $knpSnappyPdf->getOutputFromHtml($html),
-            "contract{$contractId}-{$customer}-{$date}.pdf"
-        );
+    #[Route('api/contracts/{id}/render', name: 'app_api_contracts_pdf', methods: ['GET'])]
+    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf ) {
+        $knpSnappyPdf->generateFromHtml(
+        $this->renderView(
+        'contract/pdf.html.twig',
+        array('contract'  => $contract)
+        ),
+        '/home/student/contract.pdf'
+    );
     }
 
 }

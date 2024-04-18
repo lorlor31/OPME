@@ -40,6 +40,32 @@ class EmbroideryController extends AbstractController
         // we catch the embroidery frome the database
         return $this->json($embroidery, Response::HTTP_OK,[], ["groups"=>['embroideryLinked']]);
     }
+    
+    #[Route('api/embroideries/{name}', name: 'app_api_embroideries_name', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
+    public function findByName(EmbroideryRepository $embroideryRepository,$name): JsonResponse
+    {
+        $data = $embroideryRepository->findByName($name);
+
+        return $this->json(
+            $data, 
+            Response::HTTP_OK, 
+            [], 
+            ["groups" => ['embroidery','productLinked']]
+        );
+    }
+
+    #[Route('api/embroideries/{design}', name: 'app_api_embroideries_design', methods: ['GET'], requirements: ['design' => '[a-zA-Z]+'])]
+    public function findByDesign(EmbroideryRepository $embroideryRepository,$design): JsonResponse
+    {
+        $data = $embroideryRepository->findByDesign($design);
+
+        return $this->json(
+            $data, 
+            Response::HTTP_OK, 
+            [], 
+            ["groups" => ['embroidery','productLinked']]
+        );
+    }
 
 
     #[Route('api/embroideries/create', name: 'app_api_embroideries_create', methods: ['POST'])]
@@ -128,7 +154,7 @@ class EmbroideryController extends AbstractController
 
 
     #[Route('api/embroideries/update/{id}', name:"app_api_embroideries_update", methods:['PUT'])]
-    public function update(Request $request, SerializerInterface $serializer, Embroidery $currentEmbroidery, EntityManagerInterface $em,ValidatorInterface $validator): JsonResponse 
+    public function update(Request $request, SerializerInterface $serializer, Embroidery $currentEmbroidery, EntityManagerInterface $em,ValidatorInterface $validator,EmbroideryRepository $embroideryRepository): JsonResponse 
     {   
         if (!$currentEmbroidery) {
             return $this->json([
@@ -159,7 +185,7 @@ class EmbroideryController extends AbstractController
             }
 
         }
-
+        $data = $embroideryRepository->findAll();
         $em->persist($updatedEmbroidery);
         $em->flush();
         return $this->json($updatedEmbroidery, Response::HTTP_CREATED,["Location" => $this->generateUrl("app_api_embroideries")],["groups"=>['embroideryLinked']]);

@@ -25,30 +25,30 @@ class CustomerController extends AbstractController
     public function index(CustomerRepository $customerRepository): JsonResponse
     {
         $data = $customerRepository->findAll();
-        return $this->json($data,200,[], ["groups"=>['customerLinked']] );
+        return $this->json($data,200,[], ["groups"=>['customer']] );
     }
 
     #[Route('api/customers/{id}', name: 'app_api_customers_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(customer $customer): JsonResponse
     {
-        // $response =  $this->json($customer, Response::HTTP_OK,[], ["groups"=>['customerLinked']] );
-        // //Get the content of the response 
-        // $jsonToSimplified =$response->getContent();
-        // // Convert the string Json to Json object
-        // $jsonObj = json_decode($jsonToSimplified, true);
-        // // convert the json formatted ids to simple integers 
-        // $contracts=[];
-        // // dd($jsonObj);
-        // foreach ($jsonObj['contracts']as $contract) {
-        //     $contractId=intval($contract['id']) ;
-        //     unset($contract['id']);
-        //     $contracts[]=$contractId;
-        // }
-        // $jsonObj['contracts']=$contracts;
+        $response =  $this->json($customer, Response::HTTP_OK,[], ["groups"=>['customer']] );
+        //Get the content of the response 
+        $jsonToSimplified =$response->getContent();
+        // Convert the string Json to Json object
+        $jsonObj = json_decode($jsonToSimplified, true);
+        // convert the json formatted ids to simple integers 
+        $contracts=[];
+        // dd($jsonObj);
+        foreach ($jsonObj['contracts']as $contract) {
+            $contractId=intval($contract['id']) ;
+            unset($contract['id']);
+            $contracts[]=$contractId;
+        }
+        $jsonObj['contracts']=$contracts;
         return $this->json(
-            $customer, 
-            Response::HTTP_OK,[],     
-            ["groups"=>['customerLinked']] );
+            $jsonObj, 
+            Response::HTTP_OK,     
+        );
     }
 
 
@@ -74,7 +74,8 @@ class CustomerController extends AbstractController
             catch(\Exception $e){
                 return $this->json([
                     "error"=>"We encounter some errors with your deletion",
-                    "reason"=>$e->getMessage()
+                    "reason"=>"customer enrolled",
+                    "DB"=>$e->getMessage()
                 ]
                 , Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -124,7 +125,7 @@ public function edit(Customer $customer): JsonResponse
         $customer, 
         Response::HTTP_OK, 
         [], 
-        ["groups"=>['customerLinked']] 
+        ["groups"=>['customer']] 
     );
 }
 
@@ -180,7 +181,7 @@ public function edit(Customer $customer): JsonResponse
             return $this->json($updatedCustomer, 
             Response::HTTP_CREATED,
             ["Location" => $this->generateUrl("app_api_customers")],
-            ["groups"=>['customerLinked']] 
+            ["groups"=>['customer']] 
         );
         
    }
@@ -194,7 +195,7 @@ public function edit(Customer $customer): JsonResponse
             $data, 
             200, 
             [], 
-            ["groups" => ['customerLinked']]
+            ["groups" => ['customer']]
         );
     }
     #[Route('api/customers/customer/email/{email}', name: 'app_api_customers_email', methods: ['GET'], requirements: ['name' => '[a-zA-Z]+'])]
@@ -202,7 +203,7 @@ public function edit(Customer $customer): JsonResponse
     {
         $data = $customerRepository->findCustomerEmail($email);
         if (empty($data)) {
-        return $this->json(['Poti soucis!' => 'Aucun client trouvé pour cet email'], JsonResponse::HTTP_NOT_FOUND);}
+        return $this->json(['Error' => 'No customer found for the provided email address'], JsonResponse::HTTP_NOT_FOUND);}
         $itemCount = count($data);
         $data[]= $itemCount ;
 
@@ -210,16 +211,16 @@ public function edit(Customer $customer): JsonResponse
             $data,
             200, 
             [], 
-            ["groups" => ['customerLinked']],
+            ["groups" => ['customer']],
         );
     }
 
-#[Route('api/customers/customer/phone_number/{phone_number}', name: 'app_api_customers_phone_number', methods: ['GET'], requirements: ['phone_number' => '[0-9]+'])]
-    public function findByPhoneNumber(CustomerRepository $customerRepository,$phone_number): JsonResponse
+#[Route('api/customers/customer/phone_number/{phoneNumber}', name: 'app_api_customers_phone_number', methods: ['GET'], requirements: ['phone_number' => '[0-9]+'])]
+    public function findByPhoneNumber(CustomerRepository $customerRepository,$phoneNumber): JsonResponse
     {
-        $data = $customerRepository->findByPhoneNumber($phone_number);
+        $data = $customerRepository->findByPhoneNumber($phoneNumber);
         if (empty($data)) {
-        return $this->json(['Poti soucis!' => 'Aucun client trouvé pour ce numéro de téléphone'], JsonResponse::HTTP_NOT_FOUND);}
+        return $this->json(['Error'=>'No customer found for the provided phone number'], JsonResponse::HTTP_NOT_FOUND);}
         $itemCount = count($data);
         $data[]= $itemCount ;
 
@@ -227,7 +228,7 @@ public function edit(Customer $customer): JsonResponse
             $data, 
             200, 
             [], 
-            ["groups" => ['customerLinked']]
+            ["groups" => ['customer']]
         );
     }
 }

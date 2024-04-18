@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\EmbroideryRepository;
+use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,8 +26,8 @@ class Embroidery
 
     #[Groups(['contract','embroideryLinked'])]
     #[Assert\Length(max: 100)]  
-    // #[Assert\Length(max: 1,
-    // message :'pa bon')]  
+    //#[Assert\Length(max: 1,
+    //message :'pa bon')]  
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $name = null;
 

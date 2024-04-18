@@ -10,27 +10,64 @@ $now= new DateTime('now');
 class AppProvider
 {
 // Embroideries properties
-private $embroideryName = [
-    'Tapisserie Royale',
-    'Broderie Élégance',
-    'Esquisse Enchantée',
-    'Charme de la Broderie',
-    'Couture Couronnée',
-    'Fil de la Noblesse',
-    'Broderie Impériale',
-    'Délice Dentelle',
-];
+    private $embroideryName = [
+        'Tapisserie Royale',
+        'Broderie Élégance',
+        'Esquisse Enchantée',
+        'Charme de la Broderie',
+        'Couture Couronnée',
+        'Fil de la Noblesse',
+        'Broderie Impériale',
+        'Délice Dentelle',
+    ];
 
-private $embroideryDesign = [
-    'Chaton',
-    'Chiot',
-    'Souris',
-    'Ballon',
-    'Pokémon',
-    'Star Wars',
-    'Dr Who',
-    'X-Men',
-];
+    private $embroideryDesign = [
+        'Chaton',
+        'Chiot',
+        'Souris',
+        'Ballon',
+        'Coeur',
+        'Etoile',
+        'Fleur',
+        'Papillon',
+        'Feuille',
+        'Lune',
+        'Ancre',
+        'Nuage',
+        'Fusée',
+        'Eclair',
+    ];
+
+    private $embroideryDetail = [
+        'Fil métallisé argenté, coton noir, position centrée en haut à gauche.',
+        'Coton bleu marine, tissu blanc cassé, position centrée en bas à droite.',
+        'Fil brillant argenté, tissu bleu foncé, position centrée en haut à droite.',
+        'Coton vert clair, lin beige, position centrée en bas à gauche.',
+        'Laine bleu, velours rouge, position centrée à droite.',
+        'Polyester vert, coton blanc, position diagonale en haut à gauche.',
+        'Fil métallisé doré, velours noir, position centrée en bas.',
+        'Soie rose, satin blanc, position centrée au centre.',
+        'Coton rouge, lin beige, position centrée en haut.',
+        'Soie rouge, coton blanc, position centrée en haut à gauche.',
+        'Fil de laine marron, tissu beige, position centrée en bas.',
+        'Polyester jaune, coton blanc, position centrée à droite.',
+        'Coton multicolore, lin beige, position centrée en haut à droite.',
+        'Coton bleu, tissu blanc cassé, position centrée en bas à gauche.',
+    ];
+    
+    private $embroideryText = [
+        'Happy New Year',
+        'Train Journey',
+        'Tea Party',
+        'Christmas Story',
+        'Dark Chocolate',
+        'Childrens Party',
+        'Sunny Morning',
+        'Zen Garden',
+        'Mountain Trip',
+        'Outdoor Cinema',
+        'Music Festival',
+    ];
 
 // Textile properties
 
@@ -38,60 +75,88 @@ private $embroideryDesign = [
         'JO forever blue',
         'Just Married pink',
         'Free Hugs yellow',
-        'USA NYC soccer team '
+        'USA NYC soccer team ',
+        'Sail Away',
+        'Flash',
+        'Nature Lover',
+        'Dream Big',
+        'Fly High',
+        'I Love Bordeaux',
+        'Moonlight',
     ];
 
     private $textileType = [
         'casquette',
         'tee-shirt',
         'serviette',
-        'torchon'
+        'torchon',
+        'short',
+        'chemise',
+        'caleçon',
+        'barboteuse',
+        'jupe',
+        'pantalon',
+        'chaussette',
     ];
 
     private $textileSize = [
         'S',
         'M',
         'L',
-        'XL'
+        'XL',
+        'XXL',
+        'XXXL',
     ];
 
     private $textileColor = [
         'blanc',
         'bleu',
         'noir',
-        'rose'
+        'rose',
+        'vert',
+        'jaune',
+        'violet',
+        'orange',
+        'rouge',
     ];
 
     private $textileBrand = [
         'nike',
         'adidas',
         'damart',
-        'pimkie'
+        'pimkie',
+        'celio',
+        'uniqlo',
+        'kiabi',
+        'bexley',
     ];
 
     private $textileComment = [
         'Difficile à coudre',
         'Déteint à plus de 40]',
         'Rétrécit',
-        'Ne pas repasser'
+        'Ne pas repasser',
+        'Laine épaisse',
+        'Lin fin',
+        'Tissage serré',
     ];
 
 // Customer properties
 
     private $customerName = [
-        'Eva Adroite',
-        'Fayis Lavoile',
-        'Laurent Outan',
-        'Théophile Entrope',
-        'Laure Dinateur'
+        'Association équinoxe',
+        'Fayis Martin',
+        'Laurent Dirac',
+        'Théophile Hawking',
+        'Laure Cantor'
     ] ;
 
     private $customerAddress = [
-        '1 rue de la pique',
-        '21 rue de la noix',
-        '321 rue des lampions',
-        '4514 rue Descars',
-        '56455 allée Machine'
+        '1 boulevard de la république 34000 Montpellier',
+        '21 cours de alsace lorraine 33000 Bordeaux',
+        '145 impasse montaigne 13000 Marseille',
+        '18 rue des prés verts 78220 Viroflay',
+        '7 rue Montesquieu 59000 Lille'
     ] ;
 
     private $customerEmail = [
@@ -120,33 +185,33 @@ private $embroideryDesign = [
 
 // Contract properties
 
-private $contractType = [
-    'quotation',
-    'order',
-    'invoice',
-] ;
+    private $contractType = [
+        'quotation',
+        'order',
+        'invoice',
+    ] ;
 
-private $contractDeliveryAddress = [
-    '34 av du chiot',
-    '2 rue de la fontaine',
-    '67 av de la mairie',
-    '89 route de la forêt',
-    '65 chemin de ruine',
-] ;
+    private $contractDeliveryAddress = [
+        'rés rossini appt211 bat b 34 rue abel antoune 33000 bordeaux',
+        '2 rue de la fontaine 66000 Perpignan ',
+        '67 av de la mairie 31000 Toulouse',
+        '89 route de la forêt 69001 Lyon',
+        '65 chemin de traverse 14000 Caen',
+    ] ;
 
-private $contractStatus = [
-    'created',
-    'archived',
-    'obsolete',
-    'deleted'
-] ;
+    private $contractStatus = [
+        'created',
+        'archived',
+        'obsolete',
+        'deleted'
+    ] ;
 
-private $contractComment = [
-    'Je veux un chiot dessiné sur la casquette',
-    'Expédié en bateau',
-    'Ne pas joindre la facture au colis',
-    'Cadeau pour ma femme',
-] ;
+    private $contractComment = [
+        'Je veux un chiot dessiné sur la casquette',
+        'Expédié en bateau',
+        'Ne pas joindre la facture au colis',
+        'Cadeau pour ma femme',
+    ] ;
 
 // User properties
 
@@ -165,22 +230,27 @@ private $contractComment = [
 
 // Product properties
 
-private $productName = [
-    'casquette jo 2024',
-    'tee shirt fleuri paillettes',
-    'canard en plastique'
-] ;
-private $productComment = [
-    'très fragile',
-    'très moche',
-    'interdit aux chiens'
-] ;
+    private $productName = [
+        'casquette jo 2024',
+        'tee shirt fleuri paillettes',
+        'Enterrement de vie de jeune fille',
+        'Goodies de la société équinoxe',
+        'Cadeux du mariage des Dupont',
+        
+    ] ;
+    private $productComment = [
+        'très fragile',
+        'laver à 30 degrés',
+        'Broderie à faire uniquement à la main',
+        'Produit rapide à faire ',
+        'Quantité limité',
+    ] ;
 
 
 //ne pas faire les dates, ne pas faire les codes (clé étrangère)
 
 
-public function getEmbroideryName()
+    public function getEmbroideryName()
     {
         return $this->embroideryName;
     }
@@ -188,6 +258,15 @@ public function getEmbroideryName()
     public function getEmbroideryDesign()
     {
         return $this->embroideryDesign;
+    }
+    public function getEmbroideryDetail()
+    {
+        return $this->embroideryDetail;
+    }
+
+    public function getEmbroideryText()
+    {
+        return $this->embroideryText;
     }
 
     public function getTextileName()

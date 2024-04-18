@@ -78,11 +78,11 @@ class CustomerRepository extends ServiceEntityRepository
                   ->getSingleScalarResult();
           }
 
-    public function findByPhoneNumber(string $phone_number): array
+    public function findByPhoneNumber(string $phoneNumber): array
           {
               return $this->createQueryBuilder('customer')
-                  ->andWhere('customer.phone_number LIKE :phone_number')
-                  ->setParameter('phone_number', $phone_number.'%' )
+                  ->andWhere('customer.phoneNumber LIKE :phone_number')
+                  ->setParameter('phone_number', $phoneNumber.'%' )
                   ->getQuery()
                   ->getResult();
           }

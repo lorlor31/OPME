@@ -32,16 +32,17 @@ class AppFixtures extends Fixture implements DependentFixtureInterface
         $embroideryList=$this->embroideryRepos->findAll() ;
 
         //creating some products
-        for ($i = 0; $i < 10; $i++)
+        for ($i = 0; $i < 60; $i++)
         {
             //creating  a fictitious product
             $product = new Product();
             // setting fields with data
+            $product->setdeliveryAt($faker->dateTimeInInterval('now' , '+ 2 weeks' ));
             $product->setName($faker->randomElement($faker->getProductName()));
             $product->setQuantity($faker->numberBetween(1, 100));
             $product->setPrice($faker->randomFloat(2,0,100));
             $product->setManufacturingDelay($faker->numberBetween(1, 10));
-            $product->setProductOrder($faker->unique->numberBetween(1, 10));
+            $product->setProductOrder($faker->numberBetween(1, 10));
             $product->setComment($faker->randomElement($faker->getProductComment()));
             $product->setCreatedAt((DateTimeImmutable::createFromMutable($faker->dateTimeBetween("-30 days"))));
             $product->setContract($faker->randomElement($contractList));
