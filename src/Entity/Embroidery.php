@@ -24,10 +24,8 @@ class Embroidery
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['contract','embroideryLinked'])]
+    #[Groups(['contract','embroideryLinked'])]  
     #[Assert\Length(max: 100)]  
-    //#[Assert\Length(max: 1,
-    //message :'pa bon')]  
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $name = null;
 

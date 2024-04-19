@@ -185,7 +185,7 @@ class EmbroideryController extends AbstractController
             }
 
         }
-        $data = $embroideryRepository->findAll();
+        
         $em->persist($updatedEmbroidery);
         $em->flush();
         return $this->json($updatedEmbroidery, Response::HTTP_CREATED,["Location" => $this->generateUrl("app_api_embroideries")],["groups"=>['embroideryLinked']]);

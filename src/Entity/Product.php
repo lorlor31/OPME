@@ -29,7 +29,7 @@ class Product
 
     #[Groups(['productLinked'])]
     #[Assert\NotBlank]
-    // TODO check with the product owner the min max quantities
+    #[Assert\Positive(message: 'La quantité ne peut pas être inférieur à zéro')]
     #[ORM\Column]
     private ?int $quantity = null;
 
@@ -64,8 +64,8 @@ class Product
     private ?\DateTimeImmutable $createdAt = null;
 
     #[Groups(['productLinked'])]
-    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'],nullable: true)]
-    #[Assert\type(Types::DATE_MUTABLE ,nullable: true)]
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'], nullable: true)]
+    #[Assert\type(Types::DATE_MUTABLE )]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[Groups(['contractLinkedId'])]

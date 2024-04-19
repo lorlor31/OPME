@@ -34,6 +34,6 @@ mais bon on choisira en créant le premier controller, il sera encore temps de m
 - faire des contraintes sur les nombres décimaux
 - quel format de date utiliser pour que ça fonctionne lors d'un create (migration) ??
 
-### Créer un mainCOntroller qui renvoie un JSON de bienvenue et une route d'exemple
+### Créer un mainController qui renvoie un JSON de bienvenue et une route d'exemple
 
 ### Pagination par 20 items

@@ -347,7 +347,12 @@ class ContractController extends AbstractController
         $date = date('d-m-Y-H-i') ;
         $contractId = $contract->getId();
         $customer = $contract->getCustomer()->getName();
-        $customerASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $customer);
+        $customerName =$contract->getCustomer()->getName() ;
+        $customerASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $customerName);
+        $firstname = explode(" ", $customerName)[0] ;
+        $firstnameASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $firstname);
+        $familyName = strtoupper(iconv('UTF-8', 'ASCII//TRANSLIT', explode(" ", $customerName)[1]) );
+        $familyNameASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $familyName);
         // Render the twig view
         $html = $this->renderView(
         'contract/pdf.html.cssInline.twig',
@@ -356,7 +361,7 @@ class ContractController extends AbstractController
         //convert the html to pdf response
         return new PdfResponse(
             $knpSnappyPdf->getOutputFromHtml($html),
-            "contract{$contractId}-{$customerASCII}-{$date}.pdf"
+            "contract{$contractId}-{$firstnameASCII}-{$familyNameASCII}-{$date}.pdf"
         );
     }
 
@@ -372,7 +377,10 @@ class ContractController extends AbstractController
         $customerName =$contract->getCustomer()->getName() ;
         $customerASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $customerName);
         $firstname = explode(" ", $customerName)[0] ;
+        $firstnameASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $firstname);
         $familyName = strtoupper(iconv('UTF-8', 'ASCII//TRANSLIT', explode(" ", $customerName)[1]) );
+        $familyNameASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $familyName);
+
         //TODO to use with real customer mails :) 
         // $customerMail= $contract->getCustomer()->getEmail();
 
@@ -383,7 +391,7 @@ class ContractController extends AbstractController
         //Create a pdf file from the html on the server HD
         $knpSnappyPdf->generateFromHtml(
             $html,
-            "/home/student/contract{$contractId}-{$customerASCII}-{$date}.pdf"
+            "/home/student/contract{$contractId}-{$firstnameASCII}-{$familyNameASCII}-{$date}.pdf"
         );
         //Create an email to send
         $email = (new Email())
@@ -397,7 +405,7 @@ class ContractController extends AbstractController
             <p> Bonne réception et bonne journée,  </p>
             <p> L'équipe de O'Broderie </p>
             ")
-            ->addPart(new DataPart(new File("/home/student/contract{$contractId}-{$customerASCII}-{$date}.pdf")));
+            ->addPart(new DataPart(new File("/home/student/contract{$contractId}-{$firstnameASCII}-{$familyNameASCII}-{$date}.pdf")));
         // Send the email
         $mailerinterf->send($email);
         // Return a json success

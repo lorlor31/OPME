@@ -34,6 +34,7 @@ class Customer
     #[ORM\Column(length: 500)]
     private ?string $address = null;
 
+    // TODO check email constraint
     #[Groups(['customerLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]  

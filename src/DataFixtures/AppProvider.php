@@ -86,17 +86,17 @@ class AppProvider
     ];
 
     private $textileType = [
-        'casquette',
-        'tee-shirt',
-        'serviette',
-        'torchon',
-        'short',
-        'chemise',
-        'caleçon',
-        'barboteuse',
-        'jupe',
-        'pantalon',
-        'chaussette',
+        'Casquette',
+        'Tee-shirt',
+        'Serviette',
+        'Torchon',
+        'Short',
+        'Chemise',
+        'Caleçon',
+        'Barboteuse',
+        'Jupe',
+        'Pantalon',
+        'Chaussette',
     ];
 
     private $textileSize = [
@@ -109,26 +109,26 @@ class AppProvider
     ];
 
     private $textileColor = [
-        'blanc',
-        'bleu',
-        'noir',
-        'rose',
-        'vert',
-        'jaune',
-        'violet',
-        'orange',
-        'rouge',
+        'Blanc',
+        'Bleu',
+        'Noir',
+        'Rose',
+        'Vert',
+        'Jaune',
+        'Violet',
+        'Orange',
+        'Rouge',
     ];
 
     private $textileBrand = [
-        'nike',
-        'adidas',
-        'damart',
-        'pimkie',
-        'celio',
-        'uniqlo',
-        'kiabi',
-        'bexley',
+        'Nike',
+        'Adidas',
+        'Damart',
+        'Pimkie',
+        'Celio',
+        'Uniqlo',
+        'Kiabi',
+        'Bexley',
     ];
 
     private $textileComment = [
@@ -231,16 +231,16 @@ class AppProvider
 // Product properties
 
     private $productName = [
-        'casquette jo 2024',
-        'tee shirt fleuri paillettes',
+        'Casquette jo 2024',
+        'Tee shirt fleuri paillettes',
         'Enterrement de vie de jeune fille',
         'Goodies de la société équinoxe',
-        'Cadeux du mariage des Dupont',
+        'Cadeaux du mariage des Dupont',
         
     ] ;
     private $productComment = [
-        'très fragile',
-        'laver à 30 degrés',
+        'Très fragile',
+        'Laver à 30 degrés',
         'Broderie à faire uniquement à la main',
         'Produit rapide à faire ',
         'Quantité limité',

@@ -40,7 +40,8 @@ class Contract
     #[Groups(['contractLinked'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $invoicedAt = null;
-
+    
+    // TODO : put some regex constraint to validate french address
     #[Groups(['contractLinked'])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 500)]  
