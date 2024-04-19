@@ -205,6 +205,8 @@ class ContractController extends AbstractController
                 "fail" => ["this contract doesn't exist"]
             ], Response::HTTP_NOT_FOUND);
         }
+        //todo to be improved
+        //this feature was comment to allow update without products property 
         //check it there are at least one product in the contract
         /* if (json_decode($request->getContent(), true)['products']) {
             $products = json_decode($request->getContent(), true)['products'];
@@ -327,16 +329,83 @@ class ContractController extends AbstractController
         );
     }
 
-    //route to render a pdf into the navigator
+    //route to render a preview of the contract in the navigator
     #[Route('api/contracts/{id}/viewpdf', name: 'app_api_contracts_viewpdf', methods: ['GET'])]
-    public function pdfShow(Contract $contract) 
+    public function pdfView(Contract $contract) 
     {
         return $this->render('contract/pdf.html.cssInline.twig', [
             'contract' => $contract
         ]);
     }
     
-    //route to generate a pdf file for the contract
+    
+    //route to response with a pdf file for the contract => direct download on user HD
+    #[Route('api/contracts/{id}/renderpdf', name: 'app_api_contracts_renderpdf', methods: ['GET'])]
+    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf) 
+    {
+        //Retrieve infos to customize pdf file name
+        $date = date('d-m-Y-H-i') ;
+        $contractId = $contract->getId();
+        $customer = $contract->getCustomer()->getName();
+        $customerASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $customer);
+        // Render the twig view
+        $html = $this->renderView(
+        'contract/pdf.html.cssInline.twig',
+        array('contract'  => $contract));
+
+        //convert the html to pdf response
+        return new PdfResponse(
+            $knpSnappyPdf->getOutputFromHtml($html),
+            "contract{$contractId}-{$customerASCII}-{$date}.pdf"
+        );
+    }
+
+    #[Route('api/contracts/{id}/sendpdf', name: 'app_api_contracts_sendpdf', methods: ['GET'])]
+    // the user should specify the customer mail in the query string like ?mail=user@provider.com
+    public function pdfSend(Contract $contract, knpPdf $knpSnappyPdf,MailerInterface $mailerinterf, Request $request) 
+    {
+        // Get mail from queryString
+        $customerMail = $request->query->get('mail');
+        //Retrieve infos to customize pdf file name
+        $date = date('d-m-Y-H-i') ;
+        $contractId = $contract->getId();
+        $customerName =$contract->getCustomer()->getName() ;
+        $customerASCII = iconv('UTF-8', 'ASCII//TRANSLIT', $customerName);
+        $firstname = explode(" ", $customerName)[0] ;
+        $familyName = strtoupper(iconv('UTF-8', 'ASCII//TRANSLIT', explode(" ", $customerName)[1]) );
+        //TODO to use with real customer mails :) 
+        // $customerMail= $contract->getCustomer()->getEmail();
+
+        // Render the twig view to html
+        $html = $this->renderView(
+        'contract/pdf.html.cssInline.twig',
+        array('contract'  => $contract));
+        //Create a pdf file from the html on the server HD
+        $knpSnappyPdf->generateFromHtml(
+            $html,
+            "/home/student/contract{$contractId}-{$customerASCII}-{$date}.pdf"
+        );
+        //Create an email to send
+        $email = (new Email())
+            ->from('lorlor@free.fr')
+            ->to($customerMail)
+            // ->to('fayis_78920@hotmail.fr')
+            ->subject("Voici le pdf du contrat {$contract->getId()} ")
+            // ->html('<h1>Un film a été crée</h1> <p>info du film TODO</p>');
+            ->html("<h2>Bonjour {$firstname} {$familyName}  , </h2> 
+            <p> Voici votre facture concernant le contrat n°{$contractId}. </p>
+            <p> Bonne réception et bonne journée,  </p>
+            <p> L'équipe de O'Broderie </p>
+            ")
+            ->addPart(new DataPart(new File("/home/student/contract{$contractId}-{$customerASCII}-{$date}.pdf")));
+        // Send the email
+        $mailerinterf->send($email);
+        // Return a json success
+        return $this->json(["Success" => "Sent email with pdf !"],200);
+
+    }
+
+    //route to generate a pdf file for the contract on the server HD
     // the user should specify the absolute path expected for the pdf file in the query string like ?path=home/student
     // #[Route('api/contracts/{id}/renderpdfToHd', name: 'app_api_contracts_renderpdfToHD', methods: ['GET'])]
     // public function pdfRenderHD(Contract $contract, knpPdf $knpSnappyPdf,Request $request ) 
@@ -355,55 +424,5 @@ class ContractController extends AbstractController
     //         'contract' => $contract
     //     ]);
     // }
-
-    //route to response with a pdf file for the contract
-    #[Route('api/contracts/{id}/renderpdf', name: 'app_api_contracts_renderpdf', methods: ['GET'])]
-    public function pdfRender(Contract $contract, knpPdf $knpSnappyPdf,MailerInterface $mailerinterf) 
-    {
-        //Retrieve infos to customize pdf file name
-        $date = date('d-m-Y-H-i') ;
-        $contractId = $contract->getId();
-        $customer = $contract->getCustomer()->getName();
-        // Render the twig view
-        $html = $this->renderView(
-        'contract/pdf.html.cssInline.twig',
-        array('contract'  => $contract));
-        //Create a pdf file
-        // $pdf =  $this->render('contract/pdf.html.cssInline.twig', [
-        //             'contract' => $contract
-        //         ]);
-                $knpSnappyPdf->generateFromHtml(
-                    $this->renderView(
-                        'contract/pdf.html.cssInline.twig',
-                        array(
-                            'contract'  => $contract
-                        )
-                    ),
-                    "/home/student/contract{$contractId}-{$customer}-{$date}.pdf"
-                );
-        
-        //Create an email to send
-        $email = (new Email())
-                ->from('lorlor@free.fr')
-                ->to('lorlor@free.fr')
-
-/*                 ->to('fayis_78920@hotmail.fr')
- */                ->subject("Voici le pdf du contrat {$contract->getId()} ")
-                // ->html('<h1>Un film a été crée</h1> <p>info du film TODO</p>');
-                ->html('<h1>bonne réception</h1>')
-                // ->addPart(new DataPart(new File('/home/student/con.pdf')));
-                ->addPart(new DataPart(new File("/home/student/contract{$contractId}-{$customer}-{$date}.pdf")));
-
-                // ->addPart(new DataPart(fopen($pdf,'r')));
-
-
-        $mailerinterf->send($email);
-
-        //convert the html to pdf response
-        return new PdfResponse(
-            $knpSnappyPdf->getOutputFromHtml($html),
-            "contract{$contractId}-{$customer}-{$date}.pdf"
-        );
-    }
 
 }
